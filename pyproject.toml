@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61,<66"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cdc-reliability-lab"
+version = "0.1.0"
+description = "Source-to-serving CDC reliability experiments"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+[project.scripts]
+cdc-lab = "cdc_lab.cli:main"
+
+[tool.setuptools]
+packages = ["cdc_lab"]
