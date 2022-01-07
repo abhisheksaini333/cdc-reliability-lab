@@ -9,3 +9,7 @@ class Tests(unittest.TestCase):
         self.assertIsNone(m.unwrap(None))
         with self.assertRaises(ValueError): m.unwrap([])
 
+    def test_operation(self):
+        for op in ("r","c","u","d"): self.assertEqual(m.operation({"op":op}),op)
+        with self.assertRaises(ValueError): m.operation({"op":"truncate"})
+

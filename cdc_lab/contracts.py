@@ -9,3 +9,9 @@ def unwrap(value):
     if result is not None and not isinstance(result, dict):
         raise ValueError("payload must be an object")
     return result
+
+def operation(event):
+    op = event.get("op")
+    if op not in ("r", "c", "u", "d"):
+        raise ValueError("unsupported CDC operation")
+    return op
