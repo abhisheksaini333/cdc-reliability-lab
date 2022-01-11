@@ -13,3 +13,8 @@ class Tests(unittest.TestCase):
         for op in ("r","c","u","d"): self.assertEqual(m.operation({"op":op}),op)
         with self.assertRaises(ValueError): m.operation({"op":"truncate"})
 
+    def test_row(self):
+        self.assertEqual(m.row({"op":"d","before":{"id":7},"after":None}),{"id":7})
+        self.assertEqual(m.row({"op":"u","after":{"id":8}}),{"id":8})
+        with self.assertRaises(ValueError): m.row({"op":"d","before":None})
+
