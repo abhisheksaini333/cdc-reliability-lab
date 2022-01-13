@@ -27,3 +27,12 @@ def sequence(event):
     if type(value) is not int or value < 0 or value > 9223372036854775807:
         raise ValueError("source LSN must be a nonnegative signed 64-bit integer")
     return value
+
+def identity(event):
+    import hashlib, json
+    source = event.get("source", {})
+    key = row(event).get("id")
+    if type(key) is not int or key <= 0:
+        raise ValueError("row identity must be a positive integer")
+    parts = [source.get("name", "lab"), source.get("schema", "public"), source.get("table", "readings"), sequence(event), operation(event), key]
+    return hashlib.sha256(json.dumps(parts, separators=(",", ":")).encode()).hexdigest()

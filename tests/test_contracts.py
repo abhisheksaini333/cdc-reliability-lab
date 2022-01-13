@@ -23,3 +23,10 @@ class Tests(unittest.TestCase):
         for bad in (-1,True,"123",None):
             with self.assertRaises(ValueError): m.sequence({"source":{"lsn":bad}})
 
+    def test_identity(self):
+        e={"op":"c","source":{"lsn":12,"name":"lab","schema":"public","table":"readings"},"after":{"id":1}}
+        a=m.identity(e)
+        self.assertEqual(a,m.identity(dict(e,ts_ms=999)))
+        e["after"]["id"]=2
+        self.assertNotEqual(a,m.identity(e))
+
