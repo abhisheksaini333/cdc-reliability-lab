@@ -21,3 +21,9 @@ def row(event):
     if not isinstance(value, dict):
         raise ValueError("operation requires a row image; enable REPLICA IDENTITY FULL")
     return value
+
+def sequence(event):
+    value = event.get("source", {}).get("lsn")
+    if type(value) is not int or value < 0 or value > 9223372036854775807:
+        raise ValueError("source LSN must be a nonnegative signed 64-bit integer")
+    return value

@@ -18,3 +18,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.row({"op":"u","after":{"id":8}}),{"id":8})
         with self.assertRaises(ValueError): m.row({"op":"d","before":None})
 
+    def test_lsn(self):
+        self.assertEqual(m.sequence({"source":{"lsn":123}}),123)
+        for bad in (-1,True,"123",None):
+            with self.assertRaises(ValueError): m.sequence({"source":{"lsn":bad}})
+
