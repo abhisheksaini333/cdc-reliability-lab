@@ -30,3 +30,8 @@ class Tests(unittest.TestCase):
         e["after"]["id"]=2
         self.assertNotEqual(a,m.identity(e))
 
+    def test_quality(self):
+        self.assertEqual(m.quality({"id":1,"device_id":2,"value":24.0,"unit":"C"}),[])
+        self.assertIn("value_out_of_range",m.quality({"id":1,"device_id":2,"value":999,"unit":"C"}))
+        self.assertIn("unsupported_unit",m.quality({"id":1,"device_id":2,"value":2,"unit":"K"}))
+

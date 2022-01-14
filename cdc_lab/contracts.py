@@ -36,3 +36,18 @@ def identity(event):
         raise ValueError("row identity must be a positive integer")
     parts = [source.get("name", "lab"), source.get("schema", "public"), source.get("table", "readings"), sequence(event), operation(event), key]
     return hashlib.sha256(json.dumps(parts, separators=(",", ":")).encode()).hexdigest()
+
+def quality(value):
+    import math
+    errors = []
+    for key in ("id", "device_id"):
+        if type(value.get(key)) is not int or value[key] <= 0:
+            errors.append("invalid_" + key)
+    number = value.get("value")
+    if type(number) not in (int, float) or not math.isfinite(number):
+        errors.append("invalid_value")
+    elif number < -80 or number > 150:
+        errors.append("value_out_of_range")
+    if value.get("unit") != "C":
+        errors.append("unsupported_unit")
+    return errors
