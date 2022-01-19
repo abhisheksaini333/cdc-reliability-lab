@@ -35,3 +35,9 @@ class Tests(unittest.TestCase):
         self.assertIn("value_out_of_range",m.quality({"id":1,"device_id":2,"value":999,"unit":"C"}))
         self.assertIn("unsupported_unit",m.quality({"id":1,"device_id":2,"value":2,"unit":"K"}))
 
+    def test_normalize(self):
+        e={"op":"d","source":{"lsn":10},"before":{"id":1,"device_id":2,"value":20,"unit":"C"}}
+        v=m.normalize(e,{2:{"site":"north"}})
+        self.assertEqual((v["deleted"],v["site"],v["version"]),(1,"north",10))
+        self.assertIsNone(m.normalize(None,{}))
+

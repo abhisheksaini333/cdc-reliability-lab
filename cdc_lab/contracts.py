@@ -51,3 +51,17 @@ def quality(value):
     if value.get("unit") != "C":
         errors.append("unsupported_unit")
     return errors
+
+def normalize(value, devices):
+    event = unwrap(value)
+    if event is None:
+        return None
+    image = row(event)
+    errors = quality(image)
+    device = devices.get(image.get("device_id"))
+    if device is None:
+        errors.append("unknown_device")
+    return {"event_id": identity(event), "id": image["id"], "device_id": image.get("device_id"),
+            "value": image.get("value"), "unit": image.get("unit"), "site": device.get("site", "") if device else "",
+            "version": sequence(event), "op": operation(event), "deleted": int(operation(event) == "d"),
+            "quality": errors, "contract_version": 1}
