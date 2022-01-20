@@ -65,3 +65,8 @@ def normalize(value, devices):
             "value": image.get("value"), "unit": image.get("unit"), "site": device.get("site", "") if device else "",
             "version": sequence(event), "op": operation(event), "deleted": int(operation(event) == "d"),
             "quality": errors, "contract_version": 1}
+
+REQUIRED_SCHEMA = {"id": "bigint", "device_id": "bigint", "value": "double", "unit": "text"}
+def validate_schema(schema):
+    return ["missing:" + key if key not in schema else "incompatible:" + key
+            for key, expected in REQUIRED_SCHEMA.items() if schema.get(key) != expected]

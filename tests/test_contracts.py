@@ -41,3 +41,7 @@ class Tests(unittest.TestCase):
         self.assertEqual((v["deleted"],v["site"],v["version"]),(1,"north",10))
         self.assertIsNone(m.normalize(None,{}))
 
+    def test_schema(self):
+        self.assertEqual(m.validate_schema({"id":"bigint","device_id":"bigint","value":"double","unit":"text","note":"text"}),[])
+        self.assertIn("incompatible:value",m.validate_schema({"id":"bigint","device_id":"bigint","value":"text","unit":"text"}))
+
