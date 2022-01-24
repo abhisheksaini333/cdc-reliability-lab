@@ -14,3 +14,10 @@ class Tests(unittest.TestCase):
         self.assertNotEqual(rows,m.readings(5,seed=18))
         self.assertEqual(len({r["id"] for r in rows}),5)
 
+    def test_events(self):
+        rows=m.readings(2)
+        es=m.events(rows)
+        self.assertEqual([e["op"] for e in es],["r","r"])
+        self.assertEqual(es[0]["after"],rows[0])
+        self.assertEqual(es[1]["source"]["lsn"],1001)
+

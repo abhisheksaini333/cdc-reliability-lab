@@ -12,3 +12,10 @@ def readings(count=20, seed=17, device_count=3, start=1):
     rng = random.Random(seed)
     return [{"id": i, "device_id": rng.randint(1, device_count), "value": round(rng.uniform(-10, 45), 3), "unit": "C"}
             for i in range(start, start + count)]
+
+def events(rows, operation="r", start_lsn=1000):
+    if operation not in ("r", "c", "u", "d"):
+        raise ValueError("unsupported operation")
+    return [{"op": operation, "source": {"name": "lab", "schema": "public", "table": "readings", "lsn": start_lsn + n},
+             "before": dict(value) if operation == "d" else None,
+             "after": None if operation == "d" else dict(value)} for n, value in enumerate(rows)]
