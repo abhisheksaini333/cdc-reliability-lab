@@ -1,0 +1,6 @@
+CREATE TABLE devices (id BIGINT PRIMARY KEY, site TEXT NOT NULL);
+CREATE TABLE readings (id BIGINT PRIMARY KEY, device_id BIGINT NOT NULL REFERENCES devices(id), value DOUBLE PRECISION NOT NULL, unit TEXT NOT NULL DEFAULT 'C');
+ALTER TABLE readings REPLICA IDENTITY FULL;
+INSERT INTO devices VALUES (1, 'north'), (2, 'south'), (3, 'west');
+INSERT INTO readings VALUES (1,1,21.5,'C'),(2,2,19.25,'C'),(3,3,30,'C');
+CREATE PUBLICATION lab_publication FOR TABLE readings;

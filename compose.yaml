@@ -1,0 +1,21 @@
+name: cdc-2022-validation
+services:
+  postgres:
+    image: postgres:13.5
+    mem_limit: 256m
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_DB: lab
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run init-env first}
+    command: [postgres, -c, wal_level=logical, -c, max_replication_slots=8, -c, max_wal_senders=8]
+    ports: ["127.0.0.1:4701:5432"]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U lab -d lab"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres-data:
