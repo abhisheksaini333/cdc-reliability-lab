@@ -65,8 +65,55 @@ services:
       KEY_CONVERTER_SCHEMAS_ENABLE: 'false'
       VALUE_CONVERTER_SCHEMAS_ENABLE: 'false'
 
+  jobmanager:
+    image: flink:1.14.2-scala_2.12-java11
+    platform: linux/amd64
+    user: "0:0"
+    mem_limit: 768m
+    command: jobmanager
+    ports: ["127.0.0.1:4704:8081"]
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 600m
+        taskmanager.memory.process.size: 1024m
+        parallelism.default: 1
+        execution.checkpointing.interval: 5s
+        execution.checkpointing.mode: EXACTLY_ONCE
+        state.checkpoints.dir: file:///state/checkpoints
+        state.savepoints.dir: file:///state/savepoints
+        restart-strategy: fixed-delay
+        restart-strategy.fixed-delay.attempts: 20
+        restart-strategy.fixed-delay.delay: 3s
+    volumes:
+      - flink-state:/state
+      - ./infra/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:/opt/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:ro
+      - ./infra/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:/opt/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:ro
+      - ./infra/flink/lib/postgresql-42.3.1.jar:/opt/flink/lib/postgresql-42.3.1.jar:ro
+      - ./.runtime:/runtime:ro
+  taskmanager:
+    image: flink:1.14.2-scala_2.12-java11
+    platform: linux/amd64
+    user: "0:0"
+    mem_limit: 1200m
+    command: taskmanager
+    depends_on: [jobmanager]
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        taskmanager.memory.process.size: 1024m
+        state.checkpoints.dir: file:///state/checkpoints
+        state.savepoints.dir: file:///state/savepoints
+    volumes:
+      - flink-state:/state
+      - ./infra/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:/opt/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:ro
+      - ./infra/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:/opt/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:ro
+      - ./infra/flink/lib/postgresql-42.3.1.jar:/opt/flink/lib/postgresql-42.3.1.jar:ro
+
 volumes:
   postgres-data:
   zookeeper-data:
   zookeeper-log:
   kafka-data:
+  flink-state:
