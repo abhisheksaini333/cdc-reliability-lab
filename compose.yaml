@@ -111,9 +111,22 @@ services:
       - ./infra/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:/opt/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:ro
       - ./infra/flink/lib/postgresql-42.3.1.jar:/opt/flink/lib/postgresql-42.3.1.jar:ro
 
+  clickhouse:
+    image: yandex/clickhouse-server:21.8.12.29
+    platform: linux/amd64
+    mem_limit: 640m
+    ports: ["127.0.0.1:4705:8123"]
+    environment:
+      CLICKHOUSE_USER: lab
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:?Run init-env first}
+      CLICKHOUSE_DB: lab
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes: [clickhouse-data:/var/lib/clickhouse]
+
 volumes:
   postgres-data:
   zookeeper-data:
   zookeeper-log:
   kafka-data:
   flink-state:
+  clickhouse-data:
