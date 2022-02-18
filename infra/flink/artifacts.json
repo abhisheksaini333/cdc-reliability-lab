@@ -1,14 +1,17 @@
 [
   {
     "name": "flink-sql-connector-kafka_2.12-1.14.2.jar",
-    "url": "https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka_2.12/1.14.2/flink-sql-connector-kafka_2.12-1.14.2.jar"
+    "url": "https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka_2.12/1.14.2/flink-sql-connector-kafka_2.12-1.14.2.jar",
+    "sha256": "1d23ebc3e1661a2714693d0dcd5b7fceaead5a3e496f72bf52149a400b87d5dd"
   },
   {
     "name": "flink-connector-jdbc_2.12-1.14.2.jar",
-    "url": "https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc_2.12/1.14.2/flink-connector-jdbc_2.12-1.14.2.jar"
+    "url": "https://repo.maven.apache.org/maven2/org/apache/flink/flink-connector-jdbc_2.12/1.14.2/flink-connector-jdbc_2.12-1.14.2.jar",
+    "sha256": "a8cdb8eeb5eb6631913d5e46e37d751635a17ee91d3e875ecd37844682af40c2"
   },
   {
     "name": "postgresql-42.3.1.jar",
-    "url": "https://repo.maven.apache.org/maven2/org/postgresql/postgresql/42.3.1/postgresql-42.3.1.jar"
+    "url": "https://repo.maven.apache.org/maven2/org/postgresql/postgresql/42.3.1/postgresql-42.3.1.jar",
+    "sha256": "8370570857da86eb4a76dd3d8505d34bac0c18186741fa83a6820a10fa441cb4"
   }
 ]
