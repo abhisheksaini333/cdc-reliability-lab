@@ -19,3 +19,10 @@ class Tests(unittest.TestCase):
         try:self.assertEqual(m.http_json("http://127.0.0.1:%s"%server.server_port),{"ok":True})
         finally:server.shutdown();t.join();server.server_close()
 
+    def test_wait(self):
+        attempts=[]
+        def test():
+            attempts.append(1);return len(attempts)>2
+        self.assertTrue(m.wait_for(test,timeout=1,interval=0.001))
+        with self.assertRaises(TimeoutError):m.wait_for(lambda:False,timeout=0.01,interval=0.001)
+

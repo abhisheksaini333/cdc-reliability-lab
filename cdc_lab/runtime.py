@@ -21,3 +21,16 @@ def http_json(url, data=None, method=None, timeout=15):
     if len(payload) > 1024 * 1024:
         raise ValueError("operator response exceeded 1 MiB")
     return json.loads(payload) if payload else None
+
+def wait_for(predicate, timeout=120, interval=1):
+    end = time.monotonic() + timeout
+    last = None
+    while time.monotonic() < end:
+        try:
+            value = predicate()
+            if value:
+                return value
+        except (OSError, RuntimeError, ValueError) as exc:
+            last = type(exc).__name__
+        time.sleep(min(interval, max(0, end - time.monotonic())))
+    raise TimeoutError("condition did not converge" + (": " + last if last else ""))
