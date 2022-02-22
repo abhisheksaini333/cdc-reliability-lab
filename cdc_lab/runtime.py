@@ -58,3 +58,14 @@ def clickhouse(sql):
     request.add_header("Authorization", "Basic " + base64.b64encode(("lab:" + secret).encode()).decode())
     with urllib.request.urlopen(request, timeout=30) as response:
         return response.read(16 * 1024 * 1024).decode()
+
+def connector_config(env_path=None):
+    from .config import load_env
+    settings = load_env(env_path or ROOT / ".env")
+    config = json.loads((ROOT / "infra/connect/source.json").read_text())
+    config["config"]["database.password"] = settings["POSTGRES_PASSWORD"]
+    return config
+
+def register_connector():
+    config = connector_config()
+    return http_json("http://127.0.0.1:4703/connectors/" + config["name"] + "/config", config["config"], "PUT")

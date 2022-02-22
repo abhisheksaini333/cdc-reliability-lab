@@ -32,3 +32,11 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.sql_literal(None),"NULL")
         with self.assertRaises(ValueError):m.sql_literal(float('nan'))
 
+    def test_connector(self):
+        from cdc_lab.config import create_env
+        with tempfile.TemporaryDirectory() as d:
+            p=pathlib.Path(d)/'.env';create_env(p)
+            result=m.connector_config(p)
+            self.assertEqual(result['name'],'lab-source')
+            self.assertNotIn('${',result['config']['database.password'])
+
