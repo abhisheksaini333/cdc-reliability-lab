@@ -34,3 +34,27 @@ def wait_for(predicate, timeout=120, interval=1):
             last = type(exc).__name__
         time.sleep(min(interval, max(0, end - time.monotonic())))
     raise TimeoutError("condition did not converge" + (": " + last if last else ""))
+
+def sql_literal(value):
+    import math
+    if value is None:
+        return "NULL"
+    if type(value) in (int, float):
+        if not math.isfinite(value):
+            raise ValueError("nonfinite SQL numeric literal")
+        return str(value)
+    if not isinstance(value, str) or "\x00" in value:
+        raise ValueError("unsupported SQL literal")
+    return "'" + value.replace("'", "''") + "'"
+
+def postgres(sql):
+    return compose("exec", "-T", "postgres", "psql", "-X", "-U", "lab", "-d", "lab", "-v", "ON_ERROR_STOP=1", "-At", input=sql)
+
+def clickhouse(sql):
+    from .config import load_env
+    import base64
+    secret = load_env(ROOT / ".env")["CLICKHOUSE_PASSWORD"]
+    request = urllib.request.Request("http://127.0.0.1:4705/?database=lab", data=sql.encode())
+    request.add_header("Authorization", "Basic " + base64.b64encode(("lab:" + secret).encode()).decode())
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return response.read(16 * 1024 * 1024).decode()

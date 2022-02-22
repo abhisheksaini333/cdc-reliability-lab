@@ -26,3 +26,9 @@ class Tests(unittest.TestCase):
         self.assertTrue(m.wait_for(test,timeout=1,interval=0.001))
         with self.assertRaises(TimeoutError):m.wait_for(lambda:False,timeout=0.01,interval=0.001)
 
+    def test_sqlquote(self):
+        self.assertEqual(m.sql_literal("O'Reilly"),"'O''Reilly'")
+        self.assertEqual(m.sql_literal(12),"12")
+        self.assertEqual(m.sql_literal(None),"NULL")
+        with self.assertRaises(ValueError):m.sql_literal(float('nan'))
+
