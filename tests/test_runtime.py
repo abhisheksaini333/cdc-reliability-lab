@@ -40,3 +40,8 @@ class Tests(unittest.TestCase):
             self.assertEqual(result['name'],'lab-source')
             self.assertNotIn('${',result['config']['database.password'])
 
+    def test_topicnames(self):
+        self.assertEqual(m.validate_topic('lab.public.readings'),'lab.public.readings')
+        for bad in ('../x','x;id','', 'x'*250):
+            with self.assertRaises(ValueError):m.validate_topic(bad)
+

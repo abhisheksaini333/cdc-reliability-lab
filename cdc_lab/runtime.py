@@ -69,3 +69,12 @@ def connector_config(env_path=None):
 def register_connector():
     config = connector_config()
     return http_json("http://127.0.0.1:4703/connectors/" + config["name"] + "/config", config["config"], "PUT")
+
+def validate_topic(value):
+    import re
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,248}", value) or value in (".", ".."):
+        raise ValueError("invalid Kafka topic")
+    return value
+
+def create_topic(name):
+    return compose("exec", "-T", "kafka", "/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists", "--topic", validate_topic(name), "--partitions", "1", "--replication-factor", "1")
