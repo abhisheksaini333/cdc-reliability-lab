@@ -11,3 +11,10 @@ CREATE TABLE IF NOT EXISTS lab.curated_queue (
  kafka_group_name='clickhouse-curated-v1', kafka_format='JSONEachRow', kafka_num_consumers=1,
  kafka_max_block_size=100, kafka_flush_interval_ms=500;
 CREATE MATERIALIZED VIEW IF NOT EXISTS lab.ingest_curated TO lab.raw_events AS SELECT *,now64(3) AS received_at FROM lab.curated_queue;
+CREATE VIEW IF NOT EXISTS lab.current_readings AS
+ SELECT id, tupleElement(latest,1) AS device_id,tupleElement(latest,2) AS reading_value,
+ tupleElement(latest,3) AS unit,tupleElement(latest,4) AS site,tupleElement(latest,6) AS version
+ FROM (SELECT id,argMax(tuple(device_id,reading_value,unit,site,deleted,version),tuple(version,deleted,event_id)) AS latest
+ FROM lab.raw_events GROUP BY id) WHERE tupleElement(latest,5)=0;
+CREATE VIEW IF NOT EXISTS lab.unique_events AS SELECT event_id,argMax(id,version) AS id,
+ max(version) AS version,count() AS deliveries FROM lab.raw_events GROUP BY event_id;
