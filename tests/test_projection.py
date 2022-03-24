@@ -13,3 +13,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.current(events)[0]['version'],2)
         self.assertEqual(m.current(list(reversed(events))),m.current(events))
 
+    def test_deleted(self):
+        a={'event_id':'a','id':1,'version':1,'deleted':0}
+        b={'event_id':'b','id':1,'version':2,'deleted':1}
+        self.assertEqual(m.delivery_counts([a,b,a]),{'a':2,'b':1})
+        self.assertEqual(m.current([a,b,a]),[])
+        self.assertEqual(m.current([a,dict(b,deleted=0,quality=['bad'])]),[])
+

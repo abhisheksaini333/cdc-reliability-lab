@@ -16,3 +16,9 @@ def current(events):
         if key not in state or rank > state[key][0]:
             state[key] = (rank, event)
     return [dict(value[1]) for key, value in sorted(state.items()) if not value[1].get("deleted") and not value[1].get("quality")]
+
+def delivery_counts(events):
+    counts = {}
+    for event in events:
+        counts[event["event_id"]] = counts.get(event["event_id"], 0) + 1
+    return counts
