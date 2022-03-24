@@ -7,3 +7,12 @@ def unique(events):
             raise ValueError("conflicting payload for one logical event identity")
         result[key] = dict(event)
     return list(result.values())
+
+def current(events):
+    state = {}
+    for event in unique(events):
+        key = event["id"]
+        rank = (event["version"], event.get("deleted", 0), event["event_id"])
+        if key not in state or rank > state[key][0]:
+            state[key] = (rank, event)
+    return [dict(value[1]) for key, value in sorted(state.items()) if not value[1].get("deleted") and not value[1].get("quality")]
