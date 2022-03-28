@@ -8,3 +8,9 @@ class Tests(unittest.TestCase):
         b=[{'id':2,'device_id':3,'reading_value':20.25,'unit':'C','site':'west','version':99}]
         self.assertEqual(m.canonical(a),m.canonical(b))
 
+    def test_difference(self):
+        a=[{'id':1,'device_id':1,'value':1,'unit':'C','site':'north'}]
+        b=[dict(a[0],value=2),dict(a[0],id=3)]
+        r=m.compare(a,b)
+        self.assertEqual(r['changed'],[1]);self.assertEqual(r['extra'],[3]);self.assertFalse(r['equivalent'])
+
