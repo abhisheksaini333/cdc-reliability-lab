@@ -14,3 +14,8 @@ class Tests(unittest.TestCase):
         r=m.compare(a,b)
         self.assertEqual(r['changed'],[1]);self.assertEqual(r['extra'],[3]);self.assertFalse(r['equivalent'])
 
+    def test_digest(self):
+        a=[{'id':1,'device_id':1,'value':1,'unit':'C','site':'north'}]
+        self.assertEqual(m.digest(a),m.digest(list(reversed(a))))
+        self.assertNotEqual(m.digest(a),m.digest([dict(a[0],value=2)]))
+

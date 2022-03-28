@@ -21,3 +21,21 @@ def compare(expected, actual):
     changed = sorted(key for key in left.keys() & right.keys() if left[key] != right[key])
     return {"equivalent": not (missing or extra or changed), "expected_count": len(left), "actual_count": len(right),
             "missing": missing, "extra": extra, "changed": changed}
+
+def digest(rows):
+    import hashlib, json
+    return hashlib.sha256(json.dumps(canonical(rows), sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+def source_rows():
+    from .runtime import postgres
+    import json
+    sql = "SELECT coalesce(json_agg(t),'[]'::json) FROM (SELECT r.id,r.device_id,r.value,r.unit,d.site FROM readings r JOIN devices d ON d.id=r.device_id WHERE r.value BETWEEN -80 AND 150 AND r.unit='C' ORDER BY r.id) t;"
+    return json.loads(postgres(sql))
+
+def served_rows():
+    from .runtime import clickhouse
+    import json
+    return [json.loads(line) for line in clickhouse("SELECT * FROM lab.current_readings ORDER BY id FORMAT JSONEachRow").splitlines()]
+
+def live():
+    return compare(source_rows(), served_rows())
