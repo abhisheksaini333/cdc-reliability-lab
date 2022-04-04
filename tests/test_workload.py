@@ -9,3 +9,7 @@ class Tests(unittest.TestCase):
         self.assertIn(chr(39)+'C'+chr(39)*3,s);self.assertIn('ON CONFLICT',s)
         with self.assertRaises(ValueError):m.insert_sql([])
 
+    def test_updates(self):
+        self.assertIn('WHERE id=3',m.update_sql(3,25))
+        with self.assertRaises(ValueError):m.update_sql('3;DROP',2)
+

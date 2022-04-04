@@ -10,3 +10,8 @@ def insert_sql(rows):
             raise ValueError("positive integer reading and device identities required")
         tuples.append("(" + ",".join(sql_literal(row[k]) for k in ("id", "device_id", "value", "unit")) + ")")
     return "INSERT INTO readings(id,device_id,value,unit) VALUES " + ",".join(tuples) + " ON CONFLICT(id) DO UPDATE SET device_id=EXCLUDED.device_id,value=EXCLUDED.value,unit=EXCLUDED.unit;"
+
+def update_sql(identity, value):
+    if type(identity) is not int or identity <= 0:
+        raise ValueError("positive integer reading identity required")
+    return "UPDATE readings SET value=" + sql_literal(value) + " WHERE id=" + str(identity) + ";"
