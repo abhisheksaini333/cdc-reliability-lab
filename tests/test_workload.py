@@ -13,3 +13,7 @@ class Tests(unittest.TestCase):
         self.assertIn('WHERE id=3',m.update_sql(3,25))
         with self.assertRaises(ValueError):m.update_sql('3;DROP',2)
 
+    def test_deletes(self):
+        self.assertEqual(m.delete_sql([3,1,3]),'DELETE FROM readings WHERE id IN (1,3);')
+        with self.assertRaises(ValueError):m.delete_sql([True])
+

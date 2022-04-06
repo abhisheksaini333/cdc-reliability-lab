@@ -15,3 +15,8 @@ def update_sql(identity, value):
     if type(identity) is not int or identity <= 0:
         raise ValueError("positive integer reading identity required")
     return "UPDATE readings SET value=" + sql_literal(value) + " WHERE id=" + str(identity) + ";"
+
+def delete_sql(identities):
+    if not identities or len(identities) > 10000 or any(type(key) is not int or key <= 0 for key in identities):
+        raise ValueError("bounded positive integer identities required")
+    return "DELETE FROM readings WHERE id IN (" + ",".join(str(key) for key in sorted(set(identities))) + ");"
