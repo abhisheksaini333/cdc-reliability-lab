@@ -17,3 +17,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.delete_sql([3,1,3]),'DELETE FROM readings WHERE id IN (1,3);')
         with self.assertRaises(ValueError):m.delete_sql([True])
 
+    def test_batches(self):
+        self.assertEqual(list(m.batches(list(range(5)),2)),[[0,1],[2,3],[4]])
+        with self.assertRaises(ValueError):list(m.batches([1],0))
+

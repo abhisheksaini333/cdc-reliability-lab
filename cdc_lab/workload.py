@@ -20,3 +20,17 @@ def delete_sql(identities):
     if not identities or len(identities) > 10000 or any(type(key) is not int or key <= 0 for key in identities):
         raise ValueError("bounded positive integer identities required")
     return "DELETE FROM readings WHERE id IN (" + ",".join(str(key) for key in sorted(set(identities))) + ");"
+
+def batches(rows, size=100):
+    if type(size) is not int or not 1 <= size <= 10000:
+        raise ValueError("invalid batch size")
+    for offset in range(0, len(rows), size):
+        yield rows[offset:offset + size]
+
+def generate(count=100, seed=17, start=1000):
+    from .fixtures import readings
+    from .runtime import postgres
+    rows = readings(count, seed, start=start)
+    for batch in batches(rows):
+        postgres(insert_sql(batch))
+    return len(rows)
