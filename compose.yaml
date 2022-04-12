@@ -28,7 +28,7 @@ services:
   kafka:
     image: debezium/kafka:1.8.0.Final
     platform: linux/amd64
-    mem_limit: 640m
+    mem_limit: 896m
     depends_on: [zookeeper]
     environment:
       ZOOKEEPER_CONNECT: zookeeper:2181

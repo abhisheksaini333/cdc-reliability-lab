@@ -77,4 +77,4 @@ def validate_topic(value):
     return value
 
 def create_topic(name):
-    return compose("exec", "-T", "kafka", "/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists", "--topic", validate_topic(name), "--partitions", "1", "--replication-factor", "1")
+    return compose("exec", "-T", "-e", "KAFKA_HEAP_OPTS=-Xms32m -Xmx96m", "kafka", "/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists", "--topic", validate_topic(name), "--partitions", "1", "--replication-factor", "1")
