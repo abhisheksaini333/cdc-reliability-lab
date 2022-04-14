@@ -9,3 +9,11 @@ class Tests(unittest.TestCase):
         r=m.encode_record('lab.curated',0,5,None,b'{"a":1}')
         self.assertEqual(m.decode_record(r),(None,b'{"a":1}'))
 
+    def test_bundle(self):
+        rows=[m.encode_record('lab.curated',0,0,None,b'{}')]
+        b=m.bundle(rows,{0:1})
+        self.assertEqual(b['record_count'],1)
+        self.assertEqual(m.verify_bundle(b),rows)
+        b['records'][0]['offset']=9
+        with self.assertRaises(ValueError):m.verify_bundle(b)
+
