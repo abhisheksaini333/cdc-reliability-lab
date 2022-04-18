@@ -17,3 +17,9 @@ class Tests(unittest.TestCase):
         b['records'][0]['offset']=9
         with self.assertRaises(ValueError):m.verify_bundle(b)
 
+    def test_offsetvalidation(self):
+        rows=[m.encode_record('lab.curated',0,0,None,b'{}'),m.encode_record('lab.curated',0,1,None,b'{}')]
+        self.assertIsNone(m.validate_offsets(rows,{'0':2}))
+        with self.assertRaises(ValueError):m.validate_offsets(rows,{'0':1})
+        with self.assertRaises(ValueError):m.validate_offsets(list(reversed(rows)),{'0':2})
+

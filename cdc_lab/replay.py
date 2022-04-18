@@ -27,3 +27,18 @@ def verify_bundle(value):
     if len(records) > 10000 or payload_digest(records) != value.get("sha256"):
         raise ValueError("replay bundle checksum or limit violation")
     return records
+
+def validate_offsets(records, end_offsets):
+    seen = {}
+    topic = None
+    for record in records:
+        validate_topic(record["topic"])
+        topic = topic or record["topic"]
+        partition, offset = record["partition"], record["offset"]
+        if topic != record["topic"] or type(partition) is not int or partition < 0 or type(offset) is not int or offset < 0:
+            raise ValueError("invalid replay coordinates")
+        end = end_offsets.get(str(partition))
+        if type(end) is not int or offset >= end or offset <= seen.get(partition, -1):
+            raise ValueError("replay offsets are unordered or outside frozen bounds")
+        seen[partition] = offset
+        decode_record(record)
