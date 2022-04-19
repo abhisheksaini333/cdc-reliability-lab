@@ -23,3 +23,10 @@ class Tests(unittest.TestCase):
         with self.assertRaises(ValueError):m.validate_offsets(rows,{'0':1})
         with self.assertRaises(ValueError):m.validate_offsets(list(reversed(rows)),{'0':2})
 
+    def test_privatewrite(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=pathlib.Path(d)/'events.json';v=m.bundle([],{});m.write_bundle(p,v)
+            self.assertEqual(p.stat().st_mode&0o777,0o600)
+            with self.assertRaises(FileExistsError):m.write_bundle(p,v)
+            self.assertEqual(m.read_bundle(p),v)
+

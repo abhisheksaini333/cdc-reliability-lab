@@ -42,3 +42,23 @@ def validate_offsets(records, end_offsets):
             raise ValueError("replay offsets are unordered or outside frozen bounds")
         seen[partition] = offset
         decode_record(record)
+
+def write_bundle(path, value):
+    verify_bundle(value)
+    validate_offsets(value["records"], value["end_offsets"])
+    data = json.dumps(value, sort_keys=True, indent=2).encode()
+    if len(data) > 16 * 1024 * 1024:
+        raise ValueError("replay archive exceeds 16 MiB")
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as handle:
+        handle.write(data)
+
+def read_bundle(path):
+    with open(path, "rb") as handle:
+        data = handle.read(16 * 1024 * 1024 + 1)
+    if len(data) > 16 * 1024 * 1024:
+        raise ValueError("replay archive exceeds 16 MiB")
+    value = json.loads(data)
+    verify_bundle(value)
+    validate_offsets(value["records"], value["end_offsets"])
+    return value
