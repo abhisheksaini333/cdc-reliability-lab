@@ -62,3 +62,39 @@ def read_bundle(path):
     verify_bundle(value)
     validate_offsets(value["records"], value["end_offsets"])
     return value
+
+def replay_group(label="export"):
+    validate_topic(label)
+    return "cdc-replay-" + label[:40] + "-" + uuid.uuid4().hex
+
+def export_topic(topic, maximum=10000, timeout=30):
+    from kafka import KafkaConsumer, TopicPartition
+    validate_topic(topic)
+    if type(maximum) is not int or not 1 <= maximum <= 10000:
+        raise ValueError("invalid export record limit")
+    consumer = KafkaConsumer(bootstrap_servers="127.0.0.1:4702", group_id=replay_group(),
+                             enable_auto_commit=False, auto_offset_reset="earliest", request_timeout_ms=15000,
+                             api_version=(3, 0, 0))
+    try:
+        partitions = consumer.partitions_for_topic(topic)
+        if not partitions:
+            raise ValueError("source topic has no partitions")
+        assigned = [TopicPartition(topic, p) for p in sorted(partitions)]
+        consumer.assign(assigned)
+        ends = consumer.end_offsets(assigned)
+        consumer.seek_to_beginning(*assigned)
+        records = []
+        deadline = time.monotonic() + timeout
+        while any(consumer.position(p) < ends[p] for p in assigned):
+            if time.monotonic() > deadline:
+                raise TimeoutError("bounded export did not reach its frozen offsets")
+            for partition, messages in consumer.poll(timeout_ms=500, max_records=500).items():
+                for record in messages:
+                    if record.offset < ends[partition]:
+                        records.append(encode_record(topic, record.partition, record.offset, record.key, record.value))
+                        if len(records) > maximum:
+                            raise ValueError("export exceeds record limit")
+        records.sort(key=lambda r: (r["partition"], r["offset"]))
+        return bundle(records, {p.partition: end for p, end in ends.items()})
+    finally:
+        consumer.close()

@@ -30,3 +30,8 @@ class Tests(unittest.TestCase):
             with self.assertRaises(FileExistsError):m.write_bundle(p,v)
             self.assertEqual(m.read_bundle(p),v)
 
+    def test_group(self):
+        a=m.replay_group('trial');b=m.replay_group('trial')
+        self.assertNotEqual(a,b);self.assertTrue(a.startswith('cdc-replay-trial-'))
+        with self.assertRaises(ValueError):m.replay_group('live/unsafe')
+
