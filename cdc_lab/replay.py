@@ -98,3 +98,25 @@ def export_topic(topic, maximum=10000, timeout=30):
         return bundle(records, {p.partition: end for p, end in ends.items()})
     finally:
         consumer.close()
+
+def replay_target(topic):
+    validate_topic(topic)
+    if topic not in ("lab.curated", "lab.public.readings") and not topic.startswith("lab.replay."):
+        raise ValueError("replay target must be an explicit lab data topic")
+    return topic
+
+def publish(value, target):
+    from kafka import KafkaProducer
+    target = replay_target(target)
+    records = verify_bundle(value)
+    validate_offsets(records, value["end_offsets"])
+    producer = KafkaProducer(bootstrap_servers="127.0.0.1:4702", acks="all", retries=3,
+                             max_block_ms=15000, request_timeout_ms=15000, api_version=(3, 0, 0))
+    try:
+        for record in records:
+            key, data = decode_record(record)
+            producer.send(target, key=key, value=data, partition=record["partition"]).get(timeout=20)
+        producer.flush(timeout=20)
+    finally:
+        producer.close(timeout=20)
+    return len(records)

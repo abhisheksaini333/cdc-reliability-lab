@@ -35,3 +35,8 @@ class Tests(unittest.TestCase):
         self.assertNotEqual(a,b);self.assertTrue(a.startswith('cdc-replay-trial-'))
         with self.assertRaises(ValueError):m.replay_group('live/unsafe')
 
+    def test_target(self):
+        self.assertEqual(m.replay_target('lab.replay.one'),'lab.replay.one')
+        self.assertEqual(m.replay_target('lab.curated'),'lab.curated')
+        with self.assertRaises(ValueError):m.replay_target('connect-offsets')
+
