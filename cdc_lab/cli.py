@@ -11,6 +11,12 @@ def main(argv=None):
     sub.add_parser("submit")
     sub.add_parser("serving")
     sub.add_parser("reconcile")
+    export = sub.add_parser("export")
+    export.add_argument("topic")
+    export.add_argument("output")
+    replay = sub.add_parser("replay")
+    replay.add_argument("archive")
+    replay.add_argument("target")
     load = sub.add_parser("generate")
     load.add_argument("--count",type=int,default=100)
     load.add_argument("--seed",type=int,default=17)
@@ -23,6 +29,14 @@ def main(argv=None):
     elif args.action == "topics":
         for topic in ("lab.public.readings", "lab.curated", "lab.quarantine", "__debezium-heartbeat.lab"):
             runtime.create_topic(topic)
+    elif args.action == "export":
+        from .replay import export_topic, write_bundle
+        data = export_topic(args.topic)
+        write_bundle(args.output,data)
+        print(json.dumps({"records":data["record_count"],"sha256":data["sha256"]}))
+    elif args.action == "replay":
+        from .replay import read_bundle,publish
+        print(json.dumps({"published":publish(read_bundle(args.archive),args.target)}))
     elif args.action == "reconcile":
         from .reconcile import live
         result = live()
