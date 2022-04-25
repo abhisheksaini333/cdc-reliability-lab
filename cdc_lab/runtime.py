@@ -72,7 +72,7 @@ def register_connector():
 
 def validate_topic(value):
     import re
-    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,248}", value) or value in (".", ".."):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9._-]{0,248}", value) or value in (".", ".."):
         raise ValueError("invalid Kafka topic")
     return value
 

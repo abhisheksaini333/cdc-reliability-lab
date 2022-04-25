@@ -69,13 +69,13 @@ services:
     image: flink:1.14.2-scala_2.12-java11
     platform: linux/amd64
     user: "0:0"
-    mem_limit: 768m
+    mem_limit: 1800m
     command: jobmanager
     ports: ["127.0.0.1:4704:8081"]
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: jobmanager
-        jobmanager.memory.process.size: 600m
+        jobmanager.memory.process.size: 1024m
         taskmanager.memory.process.size: 1024m
         parallelism.default: 1
         execution.checkpointing.interval: 5s

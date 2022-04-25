@@ -45,3 +45,6 @@ class Tests(unittest.TestCase):
         for bad in ('../x','x;id','', 'x'*250):
             with self.assertRaises(ValueError):m.validate_topic(bad)
 
+
+    def test_internal_topic(self):
+        self.assertEqual(m.validate_topic("__debezium-heartbeat.lab"),"__debezium-heartbeat.lab")
