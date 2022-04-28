@@ -8,3 +8,7 @@ class Tests(unittest.TestCase):
         with self.assertRaises(RuntimeError):m.select_job({'jobs':[]})
         with self.assertRaises(RuntimeError):m.select_job({'jobs':[{'jid':'a','state':'RUNNING'},{'jid':'b','state':'RUNNING'}]})
 
+    def test_checkpoints(self):
+        self.assertTrue(m.checkpoint_complete({'counts':{'completed':2}}))
+        self.assertFalse(m.checkpoint_complete({'counts':{'completed':0}}))
+
