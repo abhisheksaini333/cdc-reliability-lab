@@ -12,3 +12,8 @@ class Tests(unittest.TestCase):
         self.assertTrue(m.checkpoint_complete({'counts':{'completed':2}}))
         self.assertFalse(m.checkpoint_complete({'counts':{'completed':0}}))
 
+    def test_savepointstatus(self):
+        self.assertIsNone(m.savepoint_result({'status':{'id':'IN_PROGRESS'}}))
+        self.assertEqual(m.savepoint_result({'status':{'id':'COMPLETED'},'operation':{'location':'file:///state/savepoints/a'}}),'file:///state/savepoints/a')
+        with self.assertRaises(RuntimeError):m.savepoint_result({'status':{'id':'COMPLETED'},'operation':{'failure-cause':{}}})
+

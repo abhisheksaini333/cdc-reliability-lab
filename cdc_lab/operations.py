@@ -20,3 +20,17 @@ def checkpoint_status(job=None):
 def wait_checkpoint(job=None):
     job = job or active_job()
     return runtime.wait_for(lambda: checkpoint_complete(checkpoint_status(job)), timeout=120)
+
+def savepoint_result(status):
+    if status.get("status", {}).get("id") != "COMPLETED":
+        return None
+    operation = status.get("operation", {})
+    if "failure-cause" in operation or not operation.get("location"):
+        raise RuntimeError("Flink savepoint failed")
+    return operation["location"]
+
+def savepoint(cancel=False):
+    job = active_job()
+    base = "http://127.0.0.1:4704/jobs/" + job + "/savepoints"
+    request = runtime.http_json(base, {"target-directory": "file:///state/savepoints", "cancel-job": cancel}, "POST")
+    return runtime.wait_for(lambda: savepoint_result(runtime.http_json(base + "/" + request["request-id"])), timeout=120)
