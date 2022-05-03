@@ -17,3 +17,8 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.savepoint_result({'status':{'id':'COMPLETED'},'operation':{'location':'file:///state/savepoints/a'}}),'file:///state/savepoints/a')
         with self.assertRaises(RuntimeError):m.savepoint_result({'status':{'id':'COMPLETED'},'operation':{'failure-cause':{}}})
 
+    def test_restartallowlist(self):
+        self.assertEqual(m.restart_service_name('taskmanager'),'taskmanager')
+        for bad in ('trade-watch-api','postgres','kafka;id'):
+            with self.assertRaises(ValueError):m.restart_service_name(bad)
+

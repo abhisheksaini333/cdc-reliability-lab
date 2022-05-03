@@ -34,3 +34,11 @@ def savepoint(cancel=False):
     base = "http://127.0.0.1:4704/jobs/" + job + "/savepoints"
     request = runtime.http_json(base, {"target-directory": "file:///state/savepoints", "cancel-job": cancel}, "POST")
     return runtime.wait_for(lambda: savepoint_result(runtime.http_json(base + "/" + request["request-id"])), timeout=120)
+
+def restart_service_name(name):
+    if name not in ("taskmanager", "connect", "kafka", "clickhouse"):
+        raise ValueError("restart target is outside lab recovery scenarios")
+    return name
+
+def restart(name):
+    runtime.compose("restart", restart_service_name(name), timeout=120)
