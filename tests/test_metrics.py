@@ -12,3 +12,9 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.quality_summary(0,0,0)['valid_ratio'],None)
         with self.assertRaises(ValueError):m.quality_summary(3,-1,4)
 
+    def test_latency(self):
+        self.assertEqual(m.percentile([10,20,30,40],0.5),20)
+        self.assertEqual(m.percentile([10,20,30,40],0.95),40)
+        self.assertIsNone(m.percentile([],0.95))
+        with self.assertRaises(ValueError):m.percentile([1],2)
+

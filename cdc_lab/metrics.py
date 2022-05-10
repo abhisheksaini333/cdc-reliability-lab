@@ -14,3 +14,11 @@ def quality_summary(valid, invalid, deliveries):
     total = valid + invalid
     return {"valid_events": valid, "quarantined_events": invalid, "valid_ratio": valid / total if total else None,
             "curated_deliveries": deliveries, "duplicate_deliveries": deliveries - valid}
+
+def percentile(values, quantile):
+    import math
+    if not 0 <= quantile <= 1 or any(not math.isfinite(v) or v < 0 for v in values):
+        raise ValueError("invalid latency samples or quantile")
+    if not values:
+        return None
+    return sorted(values)[max(0, math.ceil(quantile * len(values)) - 1)]
