@@ -22,3 +22,16 @@ def percentile(values, quantile):
     if not values:
         return None
     return sorted(values)[max(0, math.ceil(quantile * len(values)) - 1)]
+
+def throughput(count, seconds):
+    import math
+    if type(count) is not int or count < 0 or not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError("positive measured duration and nonnegative count required")
+    return count / seconds
+
+def live_quality():
+    from .runtime import clickhouse
+    valid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events"))
+    invalid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.quarantine_events"))
+    delivered = int(clickhouse("SELECT count() FROM lab.raw_events"))
+    return quality_summary(valid, invalid, delivered)

@@ -18,3 +18,7 @@ class Tests(unittest.TestCase):
         self.assertIsNone(m.percentile([],0.95))
         with self.assertRaises(ValueError):m.percentile([1],2)
 
+    def test_throughput(self):
+        self.assertEqual(m.throughput(100,2.5),40)
+        with self.assertRaises(ValueError):m.throughput(10,0)
+
