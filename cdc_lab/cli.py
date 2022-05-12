@@ -11,6 +11,9 @@ def main(argv=None):
     sub.add_parser("submit")
     sub.add_parser("serving")
     sub.add_parser("reconcile")
+    sub.add_parser("schema")
+    sub.add_parser("metrics")
+    sub.add_parser("savepoint")
     export = sub.add_parser("export")
     export.add_argument("topic")
     export.add_argument("output")
@@ -29,6 +32,15 @@ def main(argv=None):
     elif args.action == "topics":
         for topic in ("lab.public.readings", "lab.curated", "lab.quarantine", "__debezium-heartbeat.lab"):
             runtime.create_topic(topic)
+    elif args.action == "schema":
+        from .schema import preflight
+        print(json.dumps(preflight()))
+    elif args.action == "metrics":
+        from .metrics import live_quality
+        print(json.dumps(live_quality()))
+    elif args.action == "savepoint":
+        from .operations import savepoint
+        print(json.dumps({"savepoint":savepoint()}))
     elif args.action == "export":
         from .replay import export_topic, write_bundle
         data = export_topic(args.topic)
