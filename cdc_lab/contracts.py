@@ -35,7 +35,7 @@ def identity(event):
     if type(key) is not int or key <= 0:
         raise ValueError("row identity must be a positive integer")
     parts = [source.get("name", "lab"), source.get("schema", "public"), source.get("table", "readings"), sequence(event), operation(event), key]
-    return hashlib.sha256(json.dumps(parts, separators=(",", ":")).encode()).hexdigest()
+    return ":".join(str(part) for part in parts)
 
 def quality(value):
     import math

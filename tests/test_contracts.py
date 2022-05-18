@@ -45,3 +45,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.validate_schema({"id":"bigint","device_id":"bigint","value":"double","unit":"text","note":"text"}),[])
         self.assertIn("incompatible:value",m.validate_schema({"id":"bigint","device_id":"bigint","value":"text","unit":"text"}))
 
+
+    def test_sql_event_identity(self):
+        event = {"op":"u","source":{"lsn":123},"after":{"id":9}}
+        self.assertEqual(m.identity(event),"lab:public:readings:123:u:9")
