@@ -20,3 +20,10 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.current([a,b,a]),[])
         self.assertEqual(m.current([a,dict(b,deleted=0,quality=['bad'])]),[])
 
+
+    def test_latest_invalid_hides_stale_value(self):
+        old = {"event_id":"a","id":1,"version":1,"quality":[],"deleted":0}
+        invalid = dict(old,event_id="b",version=2,quality=["value_out_of_range"])
+        restored = dict(old,event_id="c",version=3)
+        self.assertEqual(m.current([old,invalid]),[])
+        self.assertEqual(m.current([old,invalid,restored]),[restored])

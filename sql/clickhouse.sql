@@ -1,12 +1,12 @@
 CREATE DATABASE IF NOT EXISTS lab;
 CREATE TABLE IF NOT EXISTS lab.raw_events (
  event_id String, id Int64, device_id Int64, reading_value Float64, unit String, site String,
- version Int64, op String, deleted Int32, kafka_partition Int32, kafka_offset Int64, source_ts_ms Int64,
+ version Int64, op String, deleted Int32, kafka_partition Int32, kafka_offset Int64, source_ts_ms Int64, quality String,
  received_at DateTime64(3) DEFAULT now64(3)
 ) ENGINE=MergeTree ORDER BY (id,version,event_id);
 CREATE TABLE IF NOT EXISTS lab.curated_queue (
  event_id String, id Int64, device_id Int64, reading_value Float64, unit String, site String,
- version Int64, op String, deleted Int32, kafka_partition Int32, kafka_offset Int64, source_ts_ms Int64
+ version Int64, op String, deleted Int32, kafka_partition Int32, kafka_offset Int64, source_ts_ms Int64, quality String
 ) ENGINE=Kafka SETTINGS kafka_broker_list='kafka:9092', kafka_topic_list='lab.curated',
  kafka_group_name='clickhouse-curated-v1', kafka_format='JSONEachRow', kafka_num_consumers=1,
  kafka_max_block_size=100, kafka_flush_interval_ms=500;
@@ -14,8 +14,8 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS lab.ingest_curated TO lab.raw_events AS S
 CREATE VIEW IF NOT EXISTS lab.current_readings AS
  SELECT id, tupleElement(latest,1) AS device_id,tupleElement(latest,2) AS reading_value,
  tupleElement(latest,3) AS unit,tupleElement(latest,4) AS site,tupleElement(latest,6) AS version
- FROM (SELECT id,argMax(tuple(device_id,reading_value,unit,site,deleted,version),tuple(version,deleted,event_id)) AS latest
- FROM lab.raw_events GROUP BY id) WHERE tupleElement(latest,5)=0;
+ FROM (SELECT id,argMax(tuple(device_id,reading_value,unit,site,deleted,version,quality),tuple(version,deleted,event_id)) AS latest
+ FROM lab.raw_events GROUP BY id) WHERE tupleElement(latest,5)=0 AND tupleElement(latest,7)='';
 CREATE VIEW IF NOT EXISTS lab.unique_events AS SELECT event_id,argMax(id,version) AS id,
  max(version) AS latest_version,count() AS deliveries FROM lab.raw_events GROUP BY event_id;
 CREATE TABLE IF NOT EXISTS lab.quarantine_events (
