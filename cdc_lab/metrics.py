@@ -31,7 +31,7 @@ def throughput(count, seconds):
 
 def live_quality():
     from .runtime import clickhouse
-    valid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events"))
+    valid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events WHERE quality=''"))
     invalid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.quarantine_events"))
-    delivered = int(clickhouse("SELECT count() FROM lab.raw_events"))
+    delivered = int(clickhouse("SELECT count() FROM lab.raw_events WHERE quality=''"))
     return quality_summary(valid, invalid, delivered)
