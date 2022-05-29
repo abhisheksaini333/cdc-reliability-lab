@@ -9,3 +9,8 @@ class Tests(unittest.TestCase):
         self.assertIn('BEGIN STATEMENT SET',sql)
         self.assertNotIn('${POSTGRES_PASSWORD}',sql)
 
+    def test_submission_failure(self):
+        with self.assertRaises(RuntimeError):m.submission_id('[ERROR] Could not execute SQL statement')
+        with self.assertRaises(RuntimeError):m.submission_id('Shutting down the session...')
+        self.assertEqual(m.submission_id('Job ID: '+'a'*32),'a'*32)
+

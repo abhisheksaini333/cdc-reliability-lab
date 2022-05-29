@@ -26,3 +26,10 @@ def initialize_serving():
     for statement in (runtime.ROOT / "sql/clickhouse.sql").read_text().split(";"):
         if statement.strip():
             runtime.clickhouse(statement)
+
+def submission_id(output):
+    import re
+    match = re.search(r"Job ID:\s*([a-f0-9]{32})", output)
+    if "[ERROR]" in output or not match:
+        raise RuntimeError("Flink SQL submission failed; inspect private runtime diagnostics")
+    return match.group(1)
