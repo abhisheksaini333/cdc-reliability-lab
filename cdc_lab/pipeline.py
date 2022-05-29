@@ -20,7 +20,13 @@ def submit(restore=None):
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w") as handle:
         handle.write(render_sql(load_env(runtime.ROOT / ".env"), restore))
-    return runtime.compose("exec", "-T", "jobmanager", "/opt/flink/bin/sql-client.sh", "-f", "/runtime/pipeline.sql", timeout=180)
+    output = runtime.compose("exec", "-T", "jobmanager", "/opt/flink/bin/sql-client.sh", "-f", "/runtime/pipeline.sql", timeout=180)
+    settings = load_env(runtime.ROOT / ".env")
+    for secret in settings.values():
+        output = output.replace(secret, "[REDACTED]").replace(secret.replace("'", "''"), "[REDACTED]")
+    (folder / "last-submission.txt").write_text(output)
+    job = submission_id(output)
+    return "Submitted Flink job " + job
 
 def initialize_serving():
     for statement in (runtime.ROOT / "sql/clickhouse.sql").read_text().split(";"):
