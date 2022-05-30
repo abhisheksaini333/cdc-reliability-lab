@@ -39,3 +39,8 @@ def submission_id(output):
     if "[ERROR]" in output or not match:
         raise RuntimeError("Flink SQL submission failed; inspect private runtime diagnostics")
     return match.group(1)
+
+def ensure_no_active_job(overview):
+    terminal = {"FINISHED", "CANCELED", "FAILED"}
+    if any(job.get("state") not in terminal for job in overview.get("jobs", [])):
+        raise RuntimeError("an active pipeline already exists; stop it before submission")

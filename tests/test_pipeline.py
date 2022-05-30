@@ -14,3 +14,8 @@ class Tests(unittest.TestCase):
         with self.assertRaises(RuntimeError):m.submission_id('Shutting down the session...')
         self.assertEqual(m.submission_id('Job ID: '+'a'*32),'a'*32)
 
+    def test_single_job(self):
+        self.assertIsNone(m.ensure_no_active_job({'jobs':[{'state':'CANCELED'}]}))
+        with self.assertRaises(RuntimeError):m.ensure_no_active_job({'jobs':[{'state':'RUNNING'}]})
+        with self.assertRaises(RuntimeError):m.ensure_no_active_job({'jobs':[{'state':'RESTARTING'}]})
+
