@@ -12,6 +12,9 @@ def render_sql(settings, restore=None):
     return sql
 
 def submit(restore=None):
+    from .schema import preflight
+    preflight()
+    ensure_no_active_job(runtime.http_json("http://127.0.0.1:4704/jobs/overview"))
     from .config import load_env
     import os
     folder = runtime.ROOT / ".runtime"
