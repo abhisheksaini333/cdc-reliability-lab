@@ -6,6 +6,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
     sub.add_parser("init-env")
+    sub.add_parser("start")
     sub.add_parser("topics")
     sub.add_parser("register")
     sub.add_parser("submit")
@@ -32,6 +33,9 @@ def main(argv=None):
     elif args.action == "topics":
         for topic in ("lab.public.readings", "lab.curated", "lab.quarantine", "__debezium-heartbeat.lab"):
             runtime.create_topic(topic)
+    elif args.action == "start":
+        from .startup import start
+        print(start())
     elif args.action == "schema":
         from .schema import preflight
         print(json.dumps(preflight()))
