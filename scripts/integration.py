@@ -26,8 +26,16 @@ def mutations():
     r.postgres(workload.delete_sql([101,102]))
     return converge()
 
+def quarantine():
+    r.postgres(workload.update_sql(100,999))
+    converge()
+    r.wait_for(lambda: int(r.clickhouse("SELECT count() FROM lab.quarantine_events WHERE id=100 AND quality='invalid_value'"))>0)
+    r.postgres(workload.update_sql(100,22.5))
+    return converge()
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
+    check('invalid_latest_and_repair',quarantine)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
