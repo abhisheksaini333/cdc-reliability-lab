@@ -42,10 +42,20 @@ def replay_twice():
     if reconcile.digest(reconcile.served_rows())!=before:raise AssertionError('replay changed current state')
     return {'replayed_deliveries':delivered,'state_digest':before,'reconciliation':converge()}
 
+def worker_restart():
+    job=operations.active_job();operations.wait_checkpoint(job)
+    before=operations.checkpoint_status(job)['counts']['completed']
+    operations.restart('taskmanager')
+    r.postgres(workload.update_sql(103,34.5))
+    result=converge()
+    r.wait_for(lambda:operations.checkpoint_status(job)['counts']['completed']>before,timeout=150)
+    return {'job':job,'checkpoint_before':before,'checkpoint_after':operations.checkpoint_status(job)['counts']['completed'],'reconciliation':result}
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
     check('invalid_latest_and_repair',quarantine)
     check('repeated_bounded_replay',replay_twice)
+    check('taskmanager_checkpoint_recovery',worker_restart)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
