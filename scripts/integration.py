@@ -33,9 +33,19 @@ def quarantine():
     r.postgres(workload.update_sql(100,22.5))
     return converge()
 
+def replay_twice():
+    archive=replay.export_topic('lab.curated')
+    before=reconcile.digest(reconcile.served_rows())
+    count=int(r.clickhouse('SELECT count() FROM lab.raw_events'))
+    delivered=replay.publish(archive,'lab.curated')+replay.publish(archive,'lab.curated')
+    r.wait_for(lambda:int(r.clickhouse('SELECT count() FROM lab.raw_events'))>=count+delivered)
+    if reconcile.digest(reconcile.served_rows())!=before:raise AssertionError('replay changed current state')
+    return {'replayed_deliveries':delivered,'state_digest':before,'reconciliation':converge()}
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
     check('invalid_latest_and_repair',quarantine)
+    check('repeated_bounded_replay',replay_twice)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
