@@ -51,11 +51,28 @@ def worker_restart():
     r.wait_for(lambda:operations.checkpoint_status(job)['counts']['completed']>before,timeout=150)
     return {'job':job,'checkpoint_before':before,'checkpoint_after':operations.checkpoint_status(job)['counts']['completed'],'reconciliation':result}
 
+def connector_restart():
+    r.compose('stop','connect')
+    r.postgres(workload.update_sql(104,35.5))
+    r.compose('start','connect')
+    from cdc_lab.startup import connector_ready
+    r.wait_for(connector_ready)
+    return converge()
+
+def serving_restart():
+    r.compose('stop','clickhouse')
+    r.postgres(workload.update_sql(105,36.5))
+    r.compose('start','clickhouse')
+    r.wait_for(lambda:r.clickhouse('SELECT 1').strip()=='1')
+    return converge()
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
     check('invalid_latest_and_repair',quarantine)
     check('repeated_bounded_replay',replay_twice)
     check('taskmanager_checkpoint_recovery',worker_restart)
+    check('connector_outage_recovery',connector_restart)
+    check('serving_outage_recovery',serving_restart)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
