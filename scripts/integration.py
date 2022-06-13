@@ -66,6 +66,20 @@ def serving_restart():
     r.wait_for(lambda:r.clickhouse('SELECT 1').strip()=='1')
     return converge()
 
+def savepoint_restore():
+    from cdc_lab import pipeline
+    old=operations.active_job()
+    location=operations.savepoint(cancel=True)
+    r.wait_for(lambda:r.http_json('http://127.0.0.1:4704/jobs/'+old)['state']=='CANCELED')
+    r.postgres(workload.update_sql(106,37.5))
+    pipeline.submit(restore=location)
+    r.wait_for(lambda:operations.active_job(),timeout=120)
+    result=converge()
+    operations.wait_checkpoint()
+    status=operations.checkpoint_status()
+    if not status.get('latest',{}).get('restored'):raise AssertionError('restore evidence missing')
+    return {'savepoint':location,'restored':status['latest']['restored'],'reconciliation':result}
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
@@ -74,5 +88,6 @@ if __name__ == '__main__':
     check('taskmanager_checkpoint_recovery',worker_restart)
     check('connector_outage_recovery',connector_restart)
     check('serving_outage_recovery',serving_restart)
+    check('savepoint_restore',savepoint_restore)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
