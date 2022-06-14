@@ -80,6 +80,20 @@ def savepoint_restore():
     if not status.get('latest',{}).get('restored'):raise AssertionError('restore evidence missing')
     return {'savepoint':location,'restored':status['latest']['restored'],'reconciliation':result}
 
+def schema_evolution():
+    from cdc_lab import schema, contracts
+    r.postgres((r.ROOT/'migrations/001-add-note.sql').read_text())
+    schema.preflight()
+    r.postgres("UPDATE readings SET note='additive evolution',value=38.5 WHERE id=107;")
+    converge()
+    sql="BEGIN; ALTER TABLE readings ALTER COLUMN value TYPE TEXT USING value::text; SELECT json_agg(t) FROM (SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='readings') t; ROLLBACK;"
+    output=r.postgres(sql)
+    rows=json.loads(next(line for line in output.splitlines() if line.startswith('[')))
+    errors=contracts.validate_schema(schema.normalize_types(rows))
+    if 'incompatible:value' not in errors:raise AssertionError('incompatible source type accepted')
+    schema.preflight()
+    return {'rejected':errors,'reconciliation':converge()}
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
@@ -89,5 +103,6 @@ if __name__ == '__main__':
     check('connector_outage_recovery',connector_restart)
     check('serving_outage_recovery',serving_restart)
     check('savepoint_restore',savepoint_restore)
+    check('schema_evolution_gate',schema_evolution)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
