@@ -14,6 +14,9 @@ def main(argv=None):
     sub.add_parser("reconcile")
     sub.add_parser("schema")
     sub.add_parser("metrics")
+    benchmark = sub.add_parser("benchmark")
+    benchmark.add_argument("--count",type=int,default=100)
+    benchmark.add_argument("--rounds",type=int,default=3)
     sub.add_parser("savepoint")
     export = sub.add_parser("export")
     export.add_argument("topic")
@@ -33,6 +36,9 @@ def main(argv=None):
     elif args.action == "topics":
         for topic in ("lab.public.readings", "lab.curated", "lab.quarantine", "__debezium-heartbeat.lab"):
             runtime.create_topic(topic)
+    elif args.action == "benchmark":
+        from .benchmark import measure
+        print(json.dumps(measure(args.count,args.rounds),indent=2))
     elif args.action == "start":
         from .startup import start
         print(start())
