@@ -120,3 +120,11 @@ def publish(value, target):
     finally:
         producer.close(timeout=20)
     return len(records)
+
+def encode_with_headers(topic, partition, offset, key, value, headers):
+    record = encode_record(topic, partition, offset, key, value)
+    record["headers"] = [[name, None if item is None else base64.b64encode(item).decode("ascii")] for name, item in headers]
+    return record
+
+def decode_headers(record):
+    return [(name, None if value is None else base64.b64decode(value, validate=True)) for name, value in record.get("headers", [])]

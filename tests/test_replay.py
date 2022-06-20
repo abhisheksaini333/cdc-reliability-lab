@@ -40,3 +40,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.replay_target('lab.curated'),'lab.curated')
         with self.assertRaises(ValueError):m.replay_target('connect-offsets')
 
+    def test_headers(self):
+        r=m.encode_with_headers('lab.curated',0,0,b'k',b'v',[('trace',b'abc'),('empty',None)])
+        self.assertEqual(m.decode_headers(r),[('trace',b'abc'),('empty',None)])
+
