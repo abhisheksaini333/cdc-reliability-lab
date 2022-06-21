@@ -91,7 +91,7 @@ def export_topic(topic, maximum=10000, timeout=30):
             for partition, messages in consumer.poll(timeout_ms=500, max_records=500).items():
                 for record in messages:
                     if record.offset < ends[partition]:
-                        records.append(encode_record(topic, record.partition, record.offset, record.key, record.value))
+                        records.append(encode_with_headers(topic, record.partition, record.offset, record.key, record.value, record.headers))
                         if len(records) > maximum:
                             raise ValueError("export exceeds record limit")
         records.sort(key=lambda r: (r["partition"], r["offset"]))
@@ -115,7 +115,7 @@ def publish(value, target):
     try:
         for record in records:
             key, data = decode_record(record)
-            producer.send(target, key=key, value=data, partition=record["partition"]).get(timeout=20)
+            producer.send(target, key=key, value=data, partition=record["partition"], headers=decode_headers(record)).get(timeout=20)
         producer.flush(timeout=20)
     finally:
         producer.close(timeout=20)
