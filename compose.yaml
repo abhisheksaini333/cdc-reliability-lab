@@ -70,6 +70,7 @@ services:
     platform: linux/amd64
     user: "0:0"
     mem_limit: 1800m
+    entrypoint: ["/bin/sh", "/bootstrap-state.sh"]
     command: jobmanager
     ports: ["127.0.0.1:4704:8081"]
     environment:
@@ -87,6 +88,7 @@ services:
         restart-strategy.fixed-delay.delay: 3s
     volumes:
       - flink-state:/state
+      - ./infra/flink/bootstrap-state.sh:/bootstrap-state.sh:ro
       - ./infra/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:/opt/flink/lib/flink-sql-connector-kafka_2.12-1.14.2.jar:ro
       - ./infra/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:/opt/flink/lib/flink-connector-jdbc_2.12-1.14.2.jar:ro
       - ./infra/flink/lib/postgresql-42.3.1.jar:/opt/flink/lib/postgresql-42.3.1.jar:ro
