@@ -35,3 +35,19 @@ def live_quality():
     invalid = int(clickhouse("SELECT uniqExact(event_id) FROM lab.quarantine_events"))
     delivered = int(clickhouse("SELECT count() FROM lab.raw_events WHERE quality=''"))
     return quality_summary(valid, invalid, delivered)
+
+
+def live_lag():
+    from kafka import KafkaConsumer, TopicPartition
+    consumer = KafkaConsumer(bootstrap_servers="127.0.0.1:4702", group_id="flink-live-v1",
+                             enable_auto_commit=False, api_version=(3, 0, 0), request_timeout_ms=15000)
+    try:
+        partitions = consumer.partitions_for_topic("lab.public.readings")
+        if not partitions:
+            raise RuntimeError("source topic unavailable")
+        assigned = [TopicPartition("lab.public.readings", p) for p in sorted(partitions)]
+        ends = consumer.end_offsets(assigned)
+        committed = {p.partition: consumer.committed(p) or 0 for p in assigned}
+        return partition_lag({p.partition: end for p, end in ends.items()}, committed)
+    finally:
+        consumer.close()

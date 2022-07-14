@@ -46,8 +46,8 @@ def main(argv=None):
         from .schema import preflight
         print(json.dumps(preflight()))
     elif args.action == "metrics":
-        from .metrics import live_quality
-        print(json.dumps(live_quality()))
+        from .metrics import live_quality, live_lag
+        print(json.dumps({"quality":live_quality(),"source_partition_lag":live_lag()}))
     elif args.action == "savepoint":
         from .operations import savepoint
         print(json.dumps({"savepoint":savepoint()}))
