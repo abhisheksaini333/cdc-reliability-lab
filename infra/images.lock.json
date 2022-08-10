@@ -1,0 +1,38 @@
+[
+  {
+    "image": "debezium/connect:1.8.0.Final",
+    "digest": "debezium/connect@sha256:2d1cf851a9e695defb995d835381b8e6e07886b66a956587f60b84e356cff666",
+    "architecture": "amd64",
+    "id": "sha256:2d1cf851a9e695defb995d835381b8e6e07886b66a956587f60b84e356cff666"
+  },
+  {
+    "image": "debezium/kafka:1.8.0.Final",
+    "digest": "debezium/kafka@sha256:844039742c95bd43e08a31f7e4b57ce7f3a27c75cf4ca8752e2c5589dfaca85b",
+    "architecture": "amd64",
+    "id": "sha256:844039742c95bd43e08a31f7e4b57ce7f3a27c75cf4ca8752e2c5589dfaca85b"
+  },
+  {
+    "image": "debezium/zookeeper:1.8.0.Final",
+    "digest": "debezium/zookeeper@sha256:048d92bdcf21e092f2914c4f24086819e92959615dfcc18e0e48a91fe1f4e32d",
+    "architecture": "amd64",
+    "id": "sha256:048d92bdcf21e092f2914c4f24086819e92959615dfcc18e0e48a91fe1f4e32d"
+  },
+  {
+    "image": "flink:1.14.2-scala_2.12-java11",
+    "digest": "flink@sha256:203c25dff771c419308dc479d41ed039bdacb29765bb71dbf07e635c33430d23",
+    "architecture": "amd64",
+    "id": "sha256:203c25dff771c419308dc479d41ed039bdacb29765bb71dbf07e635c33430d23"
+  },
+  {
+    "image": "postgres:13.5",
+    "digest": "postgres@sha256:2e2e213c0fe4d1229373bebf114f255f68d86fba9e9f30e9bcc08e92cdf7b5b4",
+    "architecture": "arm64",
+    "id": "sha256:2e2e213c0fe4d1229373bebf114f255f68d86fba9e9f30e9bcc08e92cdf7b5b4"
+  },
+  {
+    "image": "yandex/clickhouse-server:21.8.12.29",
+    "digest": "yandex/clickhouse-server@sha256:812835a9105bc07d54561501863659de694b7a84589f25f7d2dc0e3c3ee29a25",
+    "architecture": "amd64",
+    "id": "sha256:812835a9105bc07d54561501863659de694b7a84589f25f7d2dc0e3c3ee29a25"
+  }
+]
