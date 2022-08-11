@@ -78,3 +78,10 @@ def validate_topic(value):
 
 def create_topic(name):
     return compose("exec", "-T", "-e", "KAFKA_HEAP_OPTS=-Xms32m -Xmx96m", "kafka", "/kafka/bin/kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--create", "--if-not-exists", "--topic", validate_topic(name), "--partitions", "1", "--replication-factor", "1")
+
+def discover_root(start):
+    candidate = Path(start).resolve()
+    for root in (candidate, *candidate.parents):
+        if (root / "compose.yaml").is_file() and (root / "infra/connect/source.json").is_file():
+            return root
+    raise ValueError("run from the CDC checkout or set CDC_LAB_ROOT to its path")

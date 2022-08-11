@@ -48,3 +48,10 @@ class Tests(unittest.TestCase):
 
     def test_internal_topic(self):
         self.assertEqual(m.validate_topic("__debezium-heartbeat.lab"),"__debezium-heartbeat.lab")
+    def test_checkout_root(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=pathlib.Path(d);(root/'infra/connect').mkdir(parents=True);(root/'infra/connect/source.json').write_text('{}');(root/'compose.yaml').write_text('services: {}')
+            sub=root/'nested';sub.mkdir()
+            self.assertEqual(m.discover_root(sub),root.resolve())
+        with self.assertRaises(ValueError):m.discover_root(pathlib.Path('/'))
+
