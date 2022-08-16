@@ -85,3 +85,14 @@ def discover_root(start):
         if (root / "compose.yaml").is_file() and (root / "infra/connect/source.json").is_file():
             return root
     raise ValueError("run from the CDC checkout or set CDC_LAB_ROOT to its path")
+
+
+# Installed console scripts still operate on an explicit source checkout.
+import os
+if "CDC_LAB_ROOT" in os.environ:
+    ROOT = discover_root(os.environ["CDC_LAB_ROOT"])
+elif not (ROOT / "compose.yaml").is_file():
+    try:
+        ROOT = discover_root(Path.cwd())
+    except ValueError:
+        pass  # --help remains available; operations explain missing local files.
