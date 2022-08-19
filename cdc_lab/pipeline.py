@@ -6,8 +6,13 @@ def render_sql(settings, restore=None):
     password = settings["POSTGRES_PASSWORD"]
     sql = sql.replace("${POSTGRES_PASSWORD}", password.replace("'", "''"))
     if restore:
-        if not restore.startswith("file:///state/savepoints/") or "'" in restore or "\n" in restore:
+        from urllib.parse import urlsplit
+        from pathlib import PurePosixPath
+        parsed = urlsplit(restore)
+        parts = PurePosixPath(parsed.path).parts
+        if parsed.scheme != 'file' or parsed.netloc or parsed.query or parsed.fragment or '..' in parts or not parsed.path.startswith('/state/savepoints/') or "'" in restore or "\n" in restore:
             raise ValueError("restore path must be a local lab savepoint")
+        restore = 'file://' + parsed.path
         sql = "SET 'execution.savepoint.path' = '" + restore + "';\n" + sql
     return sql
 

@@ -19,3 +19,9 @@ class Tests(unittest.TestCase):
         with self.assertRaises(RuntimeError):m.ensure_no_active_job({'jobs':[{'state':'RUNNING'}]})
         with self.assertRaises(RuntimeError):m.ensure_no_active_job({'jobs':[{'state':'RESTARTING'}]})
 
+
+    def test_actual_savepoint_uri(self):
+        sql = m.render_sql({'POSTGRES_PASSWORD':'local'},'file:/state/savepoints/savepoint-abc')
+        self.assertIn("file:///state/savepoints/savepoint-abc",sql)
+        for bad in ('file:///state/savepoints/../../etc/passwd','file://remote/state/savepoints/a','file:///state/savepoints/a?x=1'):
+            with self.assertRaises(ValueError):m.render_sql({'POSTGRES_PASSWORD':'local'},bad)
