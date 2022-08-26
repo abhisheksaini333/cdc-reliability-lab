@@ -7,9 +7,10 @@ def measure(count=100, rounds=3, start=10000):
         raise ValueError('benchmark rounds or count outside bounds')
     samples=[]
     for iteration in range(rounds):
+        baseline=int(runtime.clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events"))
         begun=time.monotonic()
         workload.generate(count,seed=17+iteration,start=start+iteration*count)
-        runtime.wait_for(lambda:reconcile.live()['equivalent'],timeout=120,interval=0.25)
+        runtime.wait_for(lambda:int(runtime.clickhouse('SELECT uniqExact(event_id) FROM lab.raw_events'))>=baseline+count and reconcile.live()['equivalent'],timeout=120,interval=0.25)
         elapsed=time.monotonic()-begun
         samples.append({'records':count,'convergence_seconds':elapsed,'records_per_second':metrics.throughput(count,elapsed)})
     durations=[s['convergence_seconds'] for s in samples]

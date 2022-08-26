@@ -17,7 +17,7 @@ def converge():
 
 def snapshot():
     result=converge()
-    if result['actual_count'] < 3: raise AssertionError('initial fixture snapshot missing')
+    if result['actual_count'] < 3 or int(r.clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events WHERE op='r'"))<3: raise AssertionError('initial fixture snapshot missing')
     return result
 
 def mutations():
