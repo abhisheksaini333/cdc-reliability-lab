@@ -6,7 +6,13 @@ from cdc_lab import runtime as r, reconcile, workload, operations, replay, metri
 RESULTS = []
 def check(name, action):
     start = time.monotonic()
-    result = action()
+    try:
+        result = action()
+    except Exception as exc:
+        RESULTS.append({'scenario':name,'passed':False,'seconds':round(time.monotonic()-start,3),'error':type(exc).__name__})
+        from cdc_lab.evidence import record_run
+        record_run(r.ROOT/'artifacts',RESULTS)
+        raise
     RESULTS.append({'scenario':name,'passed':True,'seconds':round(time.monotonic()-start,3),'result':result})
     print(json.dumps(RESULTS[-1]),flush=True)
     return result
@@ -106,3 +112,5 @@ if __name__ == '__main__':
     check('schema_evolution_gate',schema_evolution)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
+    from cdc_lab.evidence import record_run
+    record_run(folder,RESULTS)
