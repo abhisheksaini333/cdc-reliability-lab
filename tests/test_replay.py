@@ -44,3 +44,10 @@ class Tests(unittest.TestCase):
         r=m.encode_with_headers('lab.curated',0,0,b'k',b'v',[('trace',b'abc'),('empty',None)])
         self.assertEqual(m.decode_headers(r),[('trace',b'abc'),('empty',None)])
 
+
+    def test_all_headers_validated_before_publication(self):
+        record=m.encode_record('lab.curated',0,0,None,b'{}')
+        record['headers']=[['trace','not base64!']]
+        with self.assertRaises(ValueError):m.validate_offsets([record],{'0':1})
+        record['headers']=[[12,'YWJj']]
+        with self.assertRaises(ValueError):m.validate_offsets([record],{'0':1})

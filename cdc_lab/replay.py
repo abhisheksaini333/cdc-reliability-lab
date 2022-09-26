@@ -42,6 +42,7 @@ def validate_offsets(records, end_offsets):
             raise ValueError("replay offsets are unordered or outside frozen bounds")
         seen[partition] = offset
         decode_record(record)
+        decode_headers(record)
 
 def write_bundle(path, value):
     verify_bundle(value)
@@ -127,4 +128,13 @@ def encode_with_headers(topic, partition, offset, key, value, headers):
     return record
 
 def decode_headers(record):
-    return [(name, None if value is None else base64.b64decode(value, validate=True)) for name, value in record.get("headers", [])]
+    headers = record.get("headers", [])
+    if not isinstance(headers, list) or len(headers) > 100:
+        raise ValueError("invalid replay header list")
+    result = []
+    for pair in headers:
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2 or not isinstance(pair[0], str) or not 1 <= len(pair[0]) <= 255:
+            raise ValueError("invalid replay header name")
+        name, value = pair
+        result.append((name, None if value is None else base64.b64decode(value, validate=True)))
+    return result
