@@ -92,7 +92,7 @@ def schema_evolution():
     schema.preflight()
     r.postgres("UPDATE readings SET note='additive evolution',value=38.5 WHERE id=107;")
     converge()
-    sql="BEGIN; ALTER TABLE readings ALTER COLUMN value TYPE TEXT USING value::text; SELECT json_agg(t) FROM (SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='readings') t; ROLLBACK;"
+    sql="BEGIN; ALTER TABLE readings ALTER COLUMN value TYPE TEXT USING value::text; SELECT jsonb_agg(t) FROM (SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='readings') t; ROLLBACK;"
     output=r.postgres(sql)
     rows=json.loads(next(line for line in output.splitlines() if line.startswith('[')))
     errors=contracts.validate_schema(schema.normalize_types(rows))
