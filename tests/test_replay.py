@@ -51,3 +51,8 @@ class Tests(unittest.TestCase):
         with self.assertRaises(ValueError):m.validate_offsets([record],{'0':1})
         record['headers']=[[12,'YWJj']]
         with self.assertRaises(ValueError):m.validate_offsets([record],{'0':1})
+    def test_producer_header_contract(self):
+        record=m.encode_with_headers('lab.curated',0,0,b'k',None,[('trace',None)])
+        with self.assertRaises(ValueError):m.validate_publish_headers([record])
+        self.assertIsNone(m.validate_publish_headers([m.encode_with_headers('lab.curated',0,0,b'k',None,[('trace',b'')])]))
+

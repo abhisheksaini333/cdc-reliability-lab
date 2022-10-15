@@ -138,3 +138,10 @@ def decode_headers(record):
         name, value = pair
         result.append((name, None if value is None else base64.b64decode(value, validate=True)))
     return result
+
+def validate_publish_headers(records):
+    # kafka-python 2.0.2 cannot serialize nullable header values, although Kafka can.
+    # Refuse the complete archive before writing rather than silently changing bytes.
+    for record in records:
+        if any(value is None for _, value in decode_headers(record)):
+            raise ValueError("nullable headers require a Kafka client with nullable-header support; archive preserved")
