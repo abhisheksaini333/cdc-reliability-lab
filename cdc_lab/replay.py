@@ -111,6 +111,7 @@ def publish(value, target):
     target = replay_target(target)
     records = verify_bundle(value)
     validate_offsets(records, value["end_offsets"])
+    validate_publish_headers(records)
     producer = KafkaProducer(bootstrap_servers="127.0.0.1:4702", acks="all", retries=3,
                              max_block_ms=15000, request_timeout_ms=15000, api_version=(3, 0, 0))
     try:
