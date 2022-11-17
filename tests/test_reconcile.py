@@ -19,3 +19,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(m.digest(a),m.digest(list(reversed(a))))
         self.assertNotEqual(m.digest(a),m.digest([dict(a[0],value=2)]))
 
+
+    def test_nonfinite_served_value_is_a_validation_error(self):
+        for value in (None, float('nan'), float('inf')):
+            with self.assertRaises(ValueError):m.canonical([{'id':1,'device_id':1,'reading_value':value,'unit':'C','site':'north'}])

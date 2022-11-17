@@ -6,7 +6,10 @@ def canonical(rows):
         key = int(row["id"])
         if key in result:
             raise ValueError("duplicate current-state key")
-        value = float(row.get("reading_value", row.get("value")))
+        try:
+            value = float(row.get("reading_value", row.get("value")))
+        except (TypeError, ValueError) as exc:
+            raise ValueError("invalid analytical numeric value") from exc
         if not math.isfinite(value):
             raise ValueError("nonfinite analytical value")
         result[key] = {"id": key, "device_id": int(row["device_id"]), "value": round(value, 9),
