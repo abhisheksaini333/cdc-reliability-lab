@@ -100,6 +100,19 @@ def schema_evolution():
     schema.preflight()
     return {'rejected':errors,'reconciliation':converge()}
 
+def nonfinite_quality():
+    samples=[]
+    for value in ('NaN','Infinity','-Infinity'):
+        before=int(r.clickhouse('SELECT max(version) FROM lab.raw_events WHERE id=108'))
+        r.postgres("UPDATE readings SET value='"+value+"'::double precision WHERE id=108;")
+        r.wait_for(lambda:int(r.clickhouse('SELECT max(version) FROM lab.raw_events WHERE id=108'))>before,timeout=60)
+        quality=r.clickhouse('SELECT quality FROM lab.raw_events WHERE id=108 ORDER BY version DESC LIMIT 1').strip()
+        if quality!='invalid_value':raise AssertionError('nonfinite sensor value was accepted')
+        converge()
+        samples.append({'input':value,'quality':quality})
+    r.postgres('UPDATE readings SET value=26 WHERE id=108;')
+    return {'samples':samples,'reconciliation':converge()}
+
 if __name__ == '__main__':
     check('initial_snapshot',snapshot)
     check('insert_update_delete',mutations)
@@ -110,6 +123,7 @@ if __name__ == '__main__':
     check('serving_outage_recovery',serving_restart)
     check('savepoint_restore',savepoint_restore)
     check('schema_evolution_gate',schema_evolution)
+    check('nonfinite_quality',nonfinite_quality)
     folder=r.ROOT/'artifacts';folder.mkdir(exist_ok=True)
     (folder/'integration.json').write_text(json.dumps(RESULTS,indent=2)+'\n')
     from cdc_lab.evidence import record_run
