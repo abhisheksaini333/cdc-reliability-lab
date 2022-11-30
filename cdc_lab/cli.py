@@ -9,7 +9,8 @@ def main(argv=None):
     sub.add_parser("start")
     sub.add_parser("topics")
     sub.add_parser("register")
-    sub.add_parser("submit")
+    submit_parser = sub.add_parser("submit")
+    submit_parser.add_argument("--restore",help="verified local Flink savepoint URI")
     sub.add_parser("serving")
     sub.add_parser("reconcile")
     sub.add_parser("schema")
@@ -17,7 +18,8 @@ def main(argv=None):
     benchmark = sub.add_parser("benchmark")
     benchmark.add_argument("--count",type=int,default=100)
     benchmark.add_argument("--rounds",type=int,default=3)
-    sub.add_parser("savepoint")
+    savepoint_parser = sub.add_parser("savepoint")
+    savepoint_parser.add_argument("--stop",action="store_true",help="cancel the running job after savepoint completion")
     export = sub.add_parser("export")
     export.add_argument("topic")
     export.add_argument("output")
@@ -50,7 +52,7 @@ def main(argv=None):
         print(json.dumps({"quality":live_quality(),"source_partition_lag":live_lag()}))
     elif args.action == "savepoint":
         from .operations import savepoint
-        print(json.dumps({"savepoint":savepoint()}))
+        print(json.dumps({"savepoint":savepoint(cancel=args.stop)}))
     elif args.action == "export":
         from .replay import export_topic, write_bundle
         data = export_topic(args.topic)
@@ -69,7 +71,7 @@ def main(argv=None):
         print(json.dumps({"mutations":generate(args.count,args.seed,args.start)}))
     elif args.action == "submit":
         from .pipeline import submit
-        print(submit())
+        print(submit(restore=args.restore))
     elif args.action == "serving":
         from .pipeline import initialize_serving
         initialize_serving()

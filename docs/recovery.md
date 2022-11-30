@@ -10,3 +10,13 @@
 Use `docker compose stop` to pause the lab. `docker compose down` removes only this project's containers/network and retains volumes. Removing volumes destroys the source and offset history and is only appropriate for an explicitly disposable fresh run. Never delete offsets as a substitute for diagnosing a failed record.
 
 Published ports bind loopback. Keep `.env`, `.runtime`, source exports and volume snapshots private. The database fixtures are synthetic. Retain failed integration output before retrying; record the fix and verify the original failed scenario.
+
+For a controlled stop-and-restore operation:
+
+```sh
+python -m cdc_lab.cli savepoint --stop
+python -m cdc_lab.cli submit --restore file:/state/savepoints/<returned-savepoint>
+python -m cdc_lab.cli reconcile
+```
+
+Use the exact URI returned by the first command. The submit operation rejects traversal, remote hosts, incompatible source schemas and an already active pipeline.
