@@ -39,6 +39,8 @@ docker compose stop
 
 Integration tests change only synthetic lab fixtures, restart dedicated components, and preserve named volumes. Run them in a disposable lab instance. They exercise real PostgreSQL, Kafka, Debezium, Flink and ClickHouse; unit tests provide fast independent contract checks.
 
+See [measured verification](docs/verification.md).
+
 Read [architecture and guarantees](docs/architecture.md), [recovery](docs/recovery.md), [bounded replay](docs/replay.md), [schema evolution](docs/schema-evolution.md), and [runtime versions](docs/versions.md). This is a single-node reliability lab: data equivalence and duplicate handling are measured, while HA, multi-partition ordering and production capacity are outside its proof.
 
 An installed `cdc-lab` console command can be used from the checkout or with `CDC_LAB_ROOT=/absolute/path/to/cdc-reliability-lab`. Runtime SQL/configuration belongs to that checkout; the Python wheel contains the operator package.

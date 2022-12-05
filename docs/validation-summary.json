@@ -1,0 +1,73 @@
+{
+  "unit_tests": 61,
+  "pipeline_scenarios": [
+    "snapshot_to_stream",
+    "insert_update_delete",
+    "invalid_latest_and_repair",
+    "repeat_bounded_replay",
+    "worker_checkpoint_recovery",
+    "connector_outage_recovery",
+    "serving_outage_recovery",
+    "savepoint_restore",
+    "schema_evolution_gate",
+    "NaN_and_infinite_quality"
+  ],
+  "extra_checks": [
+    "binary_Kafka_headers_and_null_tombstone_roundtrip",
+    "fresh_state_volume_UID9999_ownership",
+    "installed_console_schema_from_external_directory",
+    "exact_jar_SHA256",
+    "immutable_image_digests"
+  ],
+  "benchmark": {
+    "scope": "synthetic local single-partition pipeline; includes source write and polling overhead",
+    "samples": [
+      {
+        "records": 100,
+        "convergence_seconds": 1.7328179581090808,
+        "records_per_second": 57.70946655534661
+      },
+      {
+        "records": 100,
+        "convergence_seconds": 2.4032717500813305,
+        "records_per_second": 41.60994277763879
+      },
+      {
+        "records": 100,
+        "convergence_seconds": 2.0532257908489555,
+        "records_per_second": 48.70384954528191
+      }
+    ],
+    "p50_batch_seconds": 2.0532257908489555,
+    "p95_batch_seconds": 2.4032717500813305,
+    "reconciliation": {
+      "equivalent": true,
+      "expected_count": 313,
+      "actual_count": 313,
+      "missing": [],
+      "extra": [],
+      "changed": []
+    }
+  },
+  "final_restore": {
+    "passed": true,
+    "seconds": 35.64027450000867,
+    "is_savepoint": true,
+    "completed_checkpoints": 1,
+    "reconciliation": {
+      "equivalent": true,
+      "expected_count": 313,
+      "actual_count": 313,
+      "missing": [],
+      "extra": [],
+      "changed": []
+    }
+  },
+  "limitations": [
+    "single broker and single source partition",
+    "processing-time device lookup requires frozen dimensions for replay equivalence",
+    "at-least-once physical deliveries with duplicate-tolerant logical projection",
+    "kafka-python 2.0.2 nullable headers are archived but rejected before publication",
+    "hosted CI is configured; local evidence does not claim a hosted run"
+  ]
+}
