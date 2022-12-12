@@ -16,14 +16,25 @@ def render_sql(settings, restore=None):
         sql = "SET 'execution.savepoint.path' = '" + restore + "';\n" + sql
     return sql
 
+def prepare_runtime():
+    """Create the private bind source as the invoking user, before Docker starts."""
+    import os
+    folder = runtime.ROOT / ".runtime"
+    if folder.is_symlink():
+        raise ValueError("runtime directory must not be a symlink")
+    folder.mkdir(mode=0o700, exist_ok=True)
+    if folder.stat().st_uid != os.getuid():
+        raise PermissionError("runtime directory must belong to the invoking user")
+    folder.chmod(0o700)
+    return folder
+
 def submit(restore=None):
     from .schema import preflight
     preflight()
     ensure_no_active_job(runtime.http_json("http://127.0.0.1:4704/jobs/overview"))
     from .config import load_env
     import os
-    folder = runtime.ROOT / ".runtime"
-    folder.mkdir(mode=0o700, exist_ok=True)
+    folder = prepare_runtime()
     path = folder / "pipeline.sql"
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, "w") as handle:

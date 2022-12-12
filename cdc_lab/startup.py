@@ -4,6 +4,7 @@ from . import runtime, pipeline
 def start():
     from .config import load_env
     load_env(runtime.ROOT / '.env')
+    pipeline.prepare_runtime()
     runtime.compose('up','-d',timeout=180)
     runtime.wait_for(lambda: runtime.postgres('SELECT 1;').strip() == '1')
     runtime.wait_for(lambda: runtime.http_json('http://127.0.0.1:4703/').get('version'))
