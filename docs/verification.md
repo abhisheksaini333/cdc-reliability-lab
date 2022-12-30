@@ -4,7 +4,7 @@ The application was exercised against the pinned PostgreSQL, Debezium/Kafka, Fli
 
 | Check | Result |
 |---|---|
-| Deterministic Python contracts/operator tests | 61 passed |
+| Deterministic Python contracts/operator tests | 63 passed |
 | Initial snapshot and insert/update/delete transitions | Source and served keys/values equal |
 | Invalid latest reading and subsequent repair | Stale served row removed, repaired row restored |
 | Repeated bounded Kafka replay | Physical deliveries increased; current-state digest unchanged |
@@ -24,3 +24,7 @@ Recovery cases were run on the actual services. The final numeric-classifier cha
 Local fixes included bounded Kafka admin JVMs, adequate coordinator heap, Flink 1.14 statement-set syntax, ClickHouse aggregate alias handling, state-volume ownership, canonical savepoint URIs, compact transactional schema JSON, bounded SQL planner resources, and nonfinite quality handling. These failures are why unit tests alone are not treated as proof of a running CDC pipeline.
 
 To repeat the checks, follow the README and run `python scripts/integration.py`; the configured manual integration workflow runs the same stack. The report does not claim hosted CI execution, production HA, multi-partition ordering, or null-header publication through the pinned Kafka client.
+
+The integration job streams scenario and benchmark JSON into its log, including completed scenarios from a failed run. Download the job log with `gh run view RUN_ID --log > acceptance.log` to preserve hosted evidence. Full local reports remain under ignored `artifacts/`; the workflow does not depend on an artifact upload service.
+
+Startup prepares the private runtime bind directory before Docker starts, so a fresh nonroot Linux checkout retains permission to write its generated SQL. The startup-order, ownership and symlink checks are covered by deterministic tests; the existing full-stack measurements above precede this filesystem-only startup fix.

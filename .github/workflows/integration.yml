@@ -16,11 +16,17 @@ jobs:
       - run: python scripts/fetch_jars.py
       - run: python -m cdc_lab.cli start
       - run: python scripts/integration.py
-      - run: python -m cdc_lab.cli benchmark --count 100 --rounds 3 > artifacts/benchmark.json
-      - uses: actions/upload-artifact@v3
+      - name: Measure source-to-serving convergence
+        shell: bash
+        run: python -m cdc_lab.cli benchmark --count 100 --rounds 3 | tee artifacts/benchmark.json
+      - name: Preserve completed and failed scenario evidence in the job log
         if: always()
-        with:
-          name: cdc-acceptance
-          path: artifacts/
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+          for report in sorted(Path('artifacts').glob('run-*.json')):
+              print(report.name)
+              print(report.read_text())
+          PYTHON
       - run: docker compose stop
         if: always()

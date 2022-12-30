@@ -1,5 +1,5 @@
 {
-  "unit_tests": 61,
+  "unit_tests": 63,
   "pipeline_scenarios": [
     "snapshot_to_stream",
     "insert_update_delete",
