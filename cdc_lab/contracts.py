@@ -22,19 +22,24 @@ def row(event):
         raise ValueError("operation requires a row image; enable REPLICA IDENTITY FULL")
     return value
 
+def source(event):
+    if not isinstance(event, dict) or not isinstance(event.get("source"), dict):
+        raise ValueError("CDC source must be an object")
+    return event["source"]
+
 def sequence(event):
-    value = event.get("source", {}).get("lsn")
+    value = source(event).get("lsn")
     if type(value) is not int or value < 0 or value > 9223372036854775807:
         raise ValueError("source LSN must be a nonnegative signed 64-bit integer")
     return value
 
 def identity(event):
     import hashlib, json
-    source = event.get("source", {})
+    source_data = source(event)
     key = row(event).get("id")
     if type(key) is not int or key <= 0:
         raise ValueError("row identity must be a positive integer")
-    parts = [source.get("name", "lab"), source.get("schema", "public"), source.get("table", "readings"), sequence(event), operation(event), key]
+    parts = [source_data.get("name", "lab"), source_data.get("schema", "public"), source_data.get("table", "readings"), sequence(event), operation(event), key]
     return ":".join(str(part) for part in parts)
 
 def quality(value):
