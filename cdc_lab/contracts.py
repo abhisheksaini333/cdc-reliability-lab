@@ -40,6 +40,8 @@ def identity(event):
     if type(key) is not int or key <= 0:
         raise ValueError("row identity must be a positive integer")
     parts = [source_data.get("name", "lab"), source_data.get("schema", "public"), source_data.get("table", "readings"), sequence(event), operation(event), key]
+    if any(not isinstance(v, str) or not v or len(v)>255 or ":" in v or any(ord(ch)<32 or ord(ch)==127 for ch in v) for v in parts[:3]):
+        raise ValueError("invalid source identity component")
     return ":".join(str(part) for part in parts)
 
 def quality(value):
