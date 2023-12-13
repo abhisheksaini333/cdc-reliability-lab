@@ -1,9 +1,17 @@
 
+def positive_identity(value):
+    import re
+    if isinstance(value, str) and re.fullmatch(r"[1-9][0-9]*", value):
+        value = int(value)
+    if type(value) is not int or not 1 <= value <= 9223372036854775807:
+        raise ValueError("invalid analytical identity")
+    return value
+
 def canonical(rows):
     import math
     result = {}
     for row in rows:
-        key = int(row["id"])
+        key = positive_identity(row["id"])
         if key in result:
             raise ValueError("duplicate current-state key")
         try:
@@ -12,7 +20,7 @@ def canonical(rows):
             raise ValueError("invalid analytical numeric value") from exc
         if not math.isfinite(value):
             raise ValueError("nonfinite analytical value")
-        result[key] = {"id": key, "device_id": int(row["device_id"]), "value": round(value, 9),
+        result[key] = {"id": key, "device_id": positive_identity(row["device_id"]), "value": round(value, 9),
                        "unit": row["unit"], "site": row["site"]}
     return [result[key] for key in sorted(result)]
 
