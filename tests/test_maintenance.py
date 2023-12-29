@@ -23,3 +23,11 @@ class Maintenance(unittest.TestCase):
             for value in (1.7,True,0,-1,'1.7'):
                 with self.assertRaises(ValueError):canonical([{**base,key:value}])
         self.assertEqual(canonical([{**base,'id':'1'}])[0]['id'],1)
+
+    def test_cdc04(self):
+        from cdc_lab.schema import normalize_types,preflight
+        self.assertEqual(normalize_types(None),{})
+        with patch('cdc_lab.schema.postgres',return_value='null'):
+            with self.assertRaisesRegex(ValueError,'incompatible'):preflight()
+        for rows in ({},[None],[{'column_name':'id'}]):
+            with self.assertRaises(ValueError):normalize_types(rows)

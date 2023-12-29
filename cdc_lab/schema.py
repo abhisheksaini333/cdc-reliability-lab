@@ -4,6 +4,12 @@ from .contracts import validate_schema
 from .runtime import postgres
 
 def normalize_types(rows):
+    if rows is None:
+        return {}
+    if not isinstance(rows, list) or any(not isinstance(row, dict) or not isinstance(row.get("column_name"), str) or not isinstance(row.get("data_type"), str) for row in rows):
+        raise ValueError("invalid source schema response")
+    if len({row["column_name"] for row in rows}) != len(rows):
+        raise ValueError("duplicate source schema column")
     mapping = {"bigint": "bigint", "double precision": "double", "text": "text"}
     return {row["column_name"]: mapping.get(row["data_type"], row["data_type"]) for row in rows}
 
