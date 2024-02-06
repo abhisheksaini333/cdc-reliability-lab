@@ -31,3 +31,9 @@ class Maintenance(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'incompatible'):preflight()
         for rows in ({},[None],[{'column_name':'id'}]):
             with self.assertRaises(ValueError):normalize_types(rows)
+
+    def test_cdc05(self):
+        from cdc_lab.workload import insert_sql
+        row={'id':1,'device_id':1,'value':3,'unit':'C'}
+        with self.assertRaisesRegex(ValueError,'duplicate'):insert_sql([row,dict(row)])
+        self.assertIn('(1,1,3',insert_sql([row]))
