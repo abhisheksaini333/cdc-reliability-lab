@@ -37,3 +37,12 @@ class Maintenance(unittest.TestCase):
         row={'id':1,'device_id':1,'value':3,'unit':'C'}
         with self.assertRaisesRegex(ValueError,'duplicate'):insert_sql([row,dict(row)])
         self.assertIn('(1,1,3',insert_sql([row]))
+
+    def test_cdc06(self):
+        from cdc_lab.replay import bundle,verify_bundle
+        valid=bundle([],{})
+        for field,value in [('format_version',True),('record_count',False),('records',{}),('sha256',7)]:
+            with self.assertRaises(ValueError): verify_bundle({**valid,field:value})
+        for value in ([],None,{}):
+            with self.assertRaises(ValueError):verify_bundle(value)
+        self.assertEqual(verify_bundle(valid),[])

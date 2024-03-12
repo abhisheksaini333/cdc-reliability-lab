@@ -21,6 +21,12 @@ def bundle(records, end_offsets):
             "sha256": payload_digest(records), "records": records}
 
 def verify_bundle(value):
+    import re
+    if (not isinstance(value, dict) or type(value.get("format_version")) is not int
+            or type(value.get("record_count")) is not int or not isinstance(value.get("records"), list)
+            or not isinstance(value.get("sha256"), str) or not re.fullmatch(r"[0-9a-f]{64}", value["sha256"])
+            or any(not isinstance(record, dict) for record in value["records"])):
+        raise ValueError("invalid replay bundle structure")
     if value.get("format_version") != 1 or value.get("record_count") != len(value.get("records", [])):
         raise ValueError("invalid replay bundle version or count")
     records = value["records"]
