@@ -46,3 +46,9 @@ class Maintenance(unittest.TestCase):
         for value in ([],None,{}):
             with self.assertRaises(ValueError):verify_bundle(value)
         self.assertEqual(verify_bundle(valid),[])
+
+    def test_cdc07(self):
+        from cdc_lab.replay import validate_offsets
+        for bounds in ({'0':True},{'01':2},{'-1':2},{'0':-1},{'0':2**63},{0:1},[]):
+            with self.assertRaises(ValueError):validate_offsets([],bounds)
+        validate_offsets([],{'0':0,'1':5})

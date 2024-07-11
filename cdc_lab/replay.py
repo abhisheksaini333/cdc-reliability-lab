@@ -35,6 +35,10 @@ def verify_bundle(value):
     return records
 
 def validate_offsets(records, end_offsets):
+    import re
+    if not isinstance(end_offsets, dict) or any(not isinstance(key, str) or not re.fullmatch(r"0|[1-9][0-9]*", key)
+        or int(key)>2147483647 or type(end) is not int or not 0<=end<=9223372036854775807 for key,end in end_offsets.items()):
+        raise ValueError("invalid frozen replay partition bounds")
     seen = {}
     topic = None
     for record in records:
