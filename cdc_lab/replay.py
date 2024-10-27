@@ -8,10 +8,20 @@ def encode_record(topic, partition, offset, key, value):
     return {"topic": validate_topic(topic), "partition": partition, "offset": offset,
             "key": encode(key), "value": encode(value)}
 
+def decode_bytes(value):
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError("replay byte fields must be Base64 strings or null")
+    try:
+        return base64.b64decode(value, validate=True)
+    except (ValueError, TypeError) as exc:
+        raise ValueError("invalid replay Base64 data") from exc
+
 def decode_record(record):
-    def decode(value):
-        return None if value is None else base64.b64decode(value, validate=True)
-    return decode(record["key"]), decode(record["value"])
+    if not isinstance(record, dict) or "key" not in record or "value" not in record:
+        raise ValueError("replay record requires key and value")
+    return decode_bytes(record["key"]), decode_bytes(record["value"])
 
 def payload_digest(records):
     return hashlib.sha256(json.dumps(records, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
@@ -147,7 +157,7 @@ def decode_headers(record):
         if not isinstance(pair, (list, tuple)) or len(pair) != 2 or not isinstance(pair[0], str) or not 1 <= len(pair[0]) <= 255:
             raise ValueError("invalid replay header name")
         name, value = pair
-        result.append((name, None if value is None else base64.b64decode(value, validate=True)))
+        result.append((name, decode_bytes(value)))
     return result
 
 def validate_publish_headers(records):

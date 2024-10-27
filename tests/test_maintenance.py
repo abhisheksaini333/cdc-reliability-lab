@@ -52,3 +52,11 @@ class Maintenance(unittest.TestCase):
         for bounds in ({'0':True},{'01':2},{'-1':2},{'0':-1},{'0':2**63},{0:1},[]):
             with self.assertRaises(ValueError):validate_offsets([],bounds)
         validate_offsets([],{'0':0,'1':5})
+
+    def test_cdc08(self):
+        from cdc_lab.replay import decode_record,decode_headers
+        for value in (True,7,[],{},'@invalid'):
+            with self.assertRaises(ValueError):decode_record({'key':value,'value':None})
+            with self.assertRaises(ValueError):decode_headers({'headers':[['key',value]]})
+        with self.assertRaises(ValueError):decode_record({})
+        self.assertEqual(decode_record({'key':'eA==','value':None}),(b'x',None))
