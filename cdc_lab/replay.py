@@ -67,12 +67,18 @@ def validate_offsets(records, end_offsets):
 def write_bundle(path, value):
     verify_bundle(value)
     validate_offsets(value["records"], value["end_offsets"])
-    data = json.dumps(value, sort_keys=True, indent=2).encode()
+    data = json.dumps(value, sort_keys=True, indent=2, allow_nan=False).encode()
     if len(data) > 16 * 1024 * 1024:
         raise ValueError("replay archive exceeds 16 MiB")
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "wb") as handle:
-        handle.write(data)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except BaseException:
+        os.unlink(path)
+        raise
 
 def read_bundle(path):
     with open(path, "rb") as handle:

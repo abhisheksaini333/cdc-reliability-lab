@@ -60,3 +60,14 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(ValueError):decode_headers({'headers':[['key',value]]})
         with self.assertRaises(ValueError):decode_record({})
         self.assertEqual(decode_record({'key':'eA==','value':None}),(b'x',None))
+
+    def test_cdc09(self):
+        from cdc_lab.replay import bundle,write_bundle
+        with tempfile.TemporaryDirectory() as d:
+            target=pathlib.Path(d)/'archive.json'
+            with patch('cdc_lab.replay.os.fsync',side_effect=OSError('disk unavailable')):
+                with self.assertRaises(OSError):write_bundle(target,bundle([],{}))
+            self.assertFalse(target.exists())
+            target.write_text('preserved')
+            with self.assertRaises(FileExistsError):write_bundle(target,bundle([],{}))
+            self.assertEqual(target.read_text(),'preserved')
