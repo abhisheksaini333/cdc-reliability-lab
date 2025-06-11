@@ -95,6 +95,9 @@ def replay_group(label="export"):
     return "cdc-replay-" + label[:40] + "-" + uuid.uuid4().hex
 
 def export_topic(topic, maximum=10000, timeout=30):
+    import math
+    if type(timeout) not in (int,float) or not math.isfinite(timeout) or not 0 < timeout <= 600:
+        raise ValueError("invalid export deadline")
     from kafka import KafkaConsumer, TopicPartition
     validate_topic(topic)
     if type(maximum) is not int or not 1 <= maximum <= 10000:

@@ -71,3 +71,10 @@ class Maintenance(unittest.TestCase):
             target.write_text('preserved')
             with self.assertRaises(FileExistsError):write_bundle(target,bundle([],{}))
             self.assertEqual(target.read_text(),'preserved')
+
+    def test_cdc10(self):
+        from cdc_lab.replay import export_topic
+        with patch('kafka.KafkaConsumer') as consumer:
+            for timeout in (0,-1,True,float('nan'),float('inf'),601):
+                with self.assertRaisesRegex(ValueError,'deadline'):export_topic('lab.readings',timeout=timeout)
+            consumer.assert_not_called()
