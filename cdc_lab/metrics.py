@@ -1,5 +1,7 @@
 
 def partition_lag(ends, consumed):
+    if not isinstance(ends, dict) or not isinstance(consumed, dict) or set(consumed)-set(ends):
+        raise ValueError("consumer partitions do not match the end-offset snapshot")
     result = {}
     for partition, end in ends.items():
         value = consumed.get(partition, 0)

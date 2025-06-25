@@ -78,3 +78,8 @@ class Maintenance(unittest.TestCase):
             for timeout in (0,-1,True,float('nan'),float('inf'),601):
                 with self.assertRaisesRegex(ValueError,'deadline'):export_topic('lab.readings',timeout=timeout)
             consumer.assert_not_called()
+
+    def test_cdc11(self):
+        from cdc_lab.metrics import partition_lag
+        with self.assertRaises(ValueError):partition_lag({0:10},{0:5,1:2})
+        self.assertEqual(partition_lag({0:10,1:8},{0:7}),{0:3,1:8})
