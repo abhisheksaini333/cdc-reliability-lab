@@ -83,3 +83,12 @@ class Maintenance(unittest.TestCase):
         from cdc_lab.metrics import partition_lag
         with self.assertRaises(ValueError):partition_lag({0:10},{0:5,1:2})
         self.assertEqual(partition_lag({0:10,1:8},{0:7}),{0:3,1:8})
+
+    def test_cdc12(self):
+        from cdc_lab.metrics import percentile,throughput
+        for samples,q in [([True],.5),([1],True),([1],'x'),([1],float('nan')),([None],.5)]:
+            with self.assertRaises(ValueError):percentile(samples,q)
+        for duration in (True,None,'1',float('inf')):
+            with self.assertRaises(ValueError):throughput(1,duration)
+        self.assertEqual(percentile([1,2,3],.5),2)
+        self.assertEqual(throughput(3,1.5),2)

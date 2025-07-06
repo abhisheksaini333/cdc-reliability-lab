@@ -19,7 +19,7 @@ def quality_summary(valid, invalid, deliveries):
 
 def percentile(values, quantile):
     import math
-    if not 0 <= quantile <= 1 or any(not math.isfinite(v) or v < 0 for v in values):
+    if not isinstance(values, (list, tuple)) or type(quantile) not in (int, float) or not math.isfinite(quantile) or not 0 <= quantile <= 1 or any(type(v) not in (int, float) or not math.isfinite(v) or v < 0 for v in values):
         raise ValueError("invalid latency samples or quantile")
     if not values:
         return None
@@ -27,7 +27,7 @@ def percentile(values, quantile):
 
 def throughput(count, seconds):
     import math
-    if type(count) is not int or count < 0 or not math.isfinite(seconds) or seconds <= 0:
+    if type(count) is not int or count < 0 or type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds <= 0:
         raise ValueError("positive measured duration and nonnegative count required")
     return count / seconds
 
