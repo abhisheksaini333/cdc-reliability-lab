@@ -23,6 +23,9 @@ def http_json(url, data=None, method=None, timeout=15):
     return json.loads(payload) if payload else None
 
 def wait_for(predicate, timeout=120, interval=1):
+    import math
+    if any(type(v) not in (int, float) or not math.isfinite(v) or not 0<v<=3600 for v in (timeout,interval)):
+        raise ValueError("invalid polling deadline or interval")
     end = time.monotonic() + timeout
     last = None
     while time.monotonic() < end:

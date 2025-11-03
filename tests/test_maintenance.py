@@ -92,3 +92,11 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(ValueError):throughput(1,duration)
         self.assertEqual(percentile([1,2,3],.5),2)
         self.assertEqual(throughput(3,1.5),2)
+
+    def test_cdc13(self):
+        from cdc_lab.runtime import wait_for
+        for options in ({'timeout':0},{'timeout':float('nan')},{'interval':0},{'interval':True},{'interval':float('inf')}):
+            predicate=Mock(return_value=True)
+            with self.assertRaises(ValueError):wait_for(predicate,**options)
+            predicate.assert_not_called()
+        self.assertEqual(wait_for(lambda:'ready',timeout=.05,interval=.01),'ready')
