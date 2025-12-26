@@ -60,7 +60,10 @@ def clickhouse(sql):
     request = urllib.request.Request("http://127.0.0.1:4705/?database=lab", data=sql.encode())
     request.add_header("Authorization", "Basic " + base64.b64encode(("lab:" + secret).encode()).decode())
     with urllib.request.urlopen(request, timeout=30) as response:
-        return response.read(16 * 1024 * 1024).decode()
+        payload = response.read(16 * 1024 * 1024 + 1)
+        if len(payload)>16 * 1024 * 1024:
+            raise ValueError("ClickHouse response exceeds 16 MiB")
+        return payload.decode()
 
 def connector_config(env_path=None):
     from .config import load_env

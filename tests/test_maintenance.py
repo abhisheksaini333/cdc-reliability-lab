@@ -100,3 +100,11 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(ValueError):wait_for(predicate,**options)
             predicate.assert_not_called()
         self.assertEqual(wait_for(lambda:'ready',timeout=.05,interval=.01),'ready')
+
+    def test_cdc14(self):
+        from cdc_lab.runtime import clickhouse
+        response=Mock();response.read.side_effect=lambda n:b'x'*min(n,16*1024*1024+1)
+        context=Mock();context.__enter__=Mock(return_value=response);context.__exit__=Mock(return_value=False)
+        with patch('cdc_lab.config.load_env',return_value={'CLICKHOUSE_PASSWORD':'local'}),patch('cdc_lab.runtime.urllib.request.urlopen',return_value=context):
+            with self.assertRaisesRegex(ValueError,'16 MiB'):clickhouse('SELECT 1')
+        context.__exit__.assert_called_once()
