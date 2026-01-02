@@ -4,7 +4,7 @@ from cdc_lab import operations as m
 
 class Tests(unittest.TestCase):
     def test_jobselection(self):
-        self.assertEqual(m.select_job({'jobs':[{'jid':'a','state':'RUNNING'}]}),'a')
+        self.assertEqual(m.select_job({'jobs':[{'jid':'a'*32,'state':'RUNNING'}]}),'a'*32)
         with self.assertRaises(RuntimeError):m.select_job({'jobs':[]})
         with self.assertRaises(RuntimeError):m.select_job({'jobs':[{'jid':'a','state':'RUNNING'},{'jid':'b','state':'RUNNING'}]})
 

@@ -108,3 +108,12 @@ class Maintenance(unittest.TestCase):
         with patch('cdc_lab.config.load_env',return_value={'CLICKHOUSE_PASSWORD':'local'}),patch('cdc_lab.runtime.urllib.request.urlopen',return_value=context):
             with self.assertRaisesRegex(ValueError,'16 MiB'):clickhouse('SELECT 1')
         context.__exit__.assert_called_once()
+
+    def test_cdc15(self):
+        from cdc_lab.operations import select_job,checkpoint_status
+        for value in (None,{'jobs':None},{'jobs':[None]},{'jobs':[{'state':'RUNNING','jid':'../x'}]}):
+            with self.assertRaises(RuntimeError):select_job(value)
+        with patch('cdc_lab.operations.runtime.http_json') as request:
+            with self.assertRaises(RuntimeError):checkpoint_status('../x')
+            request.assert_not_called()
+        self.assertEqual(select_job({'jobs':[{'state':'RUNNING','jid':'a'*32}]}),'a'*32)

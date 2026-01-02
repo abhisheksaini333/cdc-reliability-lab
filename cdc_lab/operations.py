@@ -1,11 +1,19 @@
 
 from . import runtime
 
+def job_id(value):
+    import re
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9a-fA-F]{32}", value):
+        raise RuntimeError("invalid Flink job identity")
+    return value
+
 def select_job(overview):
+    if not isinstance(overview, dict) or not isinstance(overview.get("jobs"), list) or any(not isinstance(job, dict) for job in overview["jobs"]):
+        raise RuntimeError("invalid Flink job overview")
     jobs = [job for job in overview.get("jobs", []) if job.get("state") == "RUNNING"]
     if len(jobs) != 1:
         raise RuntimeError("expected exactly one running pipeline; inspect Flink jobs")
-    return jobs[0]["jid"]
+    return job_id(jobs[0].get("jid"))
 
 def active_job():
     return select_job(runtime.http_json("http://127.0.0.1:4704/jobs/overview"))
@@ -14,11 +22,11 @@ def checkpoint_complete(status):
     return status.get("counts", {}).get("completed", 0) > 0
 
 def checkpoint_status(job=None):
-    job = job or active_job()
+    job = job_id(job) if job is not None else active_job()
     return runtime.http_json("http://127.0.0.1:4704/jobs/" + job + "/checkpoints")
 
 def wait_checkpoint(job=None):
-    job = job or active_job()
+    job = job_id(job) if job is not None else active_job()
     return runtime.wait_for(lambda: checkpoint_complete(checkpoint_status(job)), timeout=120)
 
 def savepoint_result(status):
