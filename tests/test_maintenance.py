@@ -117,3 +117,11 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(RuntimeError):checkpoint_status('../x')
             request.assert_not_called()
         self.assertEqual(select_job({'jobs':[{'state':'RUNNING','jid':'a'*32}]}),'a'*32)
+
+    def test_cdc16(self):
+        from cdc_lab.operations import checkpoint_complete
+        for count in (True,'2',-1,None):
+            with self.assertRaises(ValueError):checkpoint_complete({'counts':{'completed':count}})
+        with self.assertRaises(ValueError):checkpoint_complete({'counts':None})
+        self.assertFalse(checkpoint_complete({'counts':{'completed':0}}))
+        self.assertTrue(checkpoint_complete({'counts':{'completed':1}}))

@@ -19,7 +19,12 @@ def active_job():
     return select_job(runtime.http_json("http://127.0.0.1:4704/jobs/overview"))
 
 def checkpoint_complete(status):
-    return status.get("counts", {}).get("completed", 0) > 0
+    if not isinstance(status, dict) or not isinstance(status.get("counts"), dict):
+        raise ValueError("invalid checkpoint response")
+    count = status["counts"].get("completed", 0)
+    if type(count) is not int or count < 0:
+        raise ValueError("invalid completed checkpoint count")
+    return count > 0
 
 def checkpoint_status(job=None):
     job = job_id(job) if job is not None else active_job()
