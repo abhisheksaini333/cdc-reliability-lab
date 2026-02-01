@@ -35,10 +35,13 @@ def wait_checkpoint(job=None):
     return runtime.wait_for(lambda: checkpoint_complete(checkpoint_status(job)), timeout=120)
 
 def savepoint_result(status):
-    if status.get("status", {}).get("id") != "COMPLETED":
+    if not isinstance(status, dict) or not isinstance(status.get("status"), dict) or status["status"].get("id") not in ("IN_PROGRESS", "COMPLETED"):
+        raise RuntimeError("invalid Flink savepoint response")
+    if status["status"]["id"] == "IN_PROGRESS":
         return None
     operation = status.get("operation", {})
-    if "failure-cause" in operation or not operation.get("location"):
+    location = operation.get("location") if isinstance(operation, dict) else None
+    if not isinstance(operation, dict) or "failure-cause" in operation or not isinstance(location, str) or not location.startswith("file:///state/savepoints/") or any(ord(ch)<32 for ch in location):
         raise RuntimeError("Flink savepoint failed")
     return operation["location"]
 

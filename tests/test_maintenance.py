@@ -125,3 +125,10 @@ class Maintenance(unittest.TestCase):
         with self.assertRaises(ValueError):checkpoint_complete({'counts':None})
         self.assertFalse(checkpoint_complete({'counts':{'completed':0}}))
         self.assertTrue(checkpoint_complete({'counts':{'completed':1}}))
+
+    def test_cdc17(self):
+        from cdc_lab.operations import savepoint_result
+        for value in (None,{'status':None},{'status':{'id':'FAILED'}},{'status':{'id':'COMPLETED'},'operation':{'location':7}},{'status':{'id':'COMPLETED'},'operation':{'location':'http://wrong'}}):
+            with self.assertRaises(RuntimeError):savepoint_result(value)
+        self.assertIsNone(savepoint_result({'status':{'id':'IN_PROGRESS'}}))
+        self.assertEqual(savepoint_result({'status':{'id':'COMPLETED'},'operation':{'location':'file:///state/savepoints/job'}}),'file:///state/savepoints/job')
