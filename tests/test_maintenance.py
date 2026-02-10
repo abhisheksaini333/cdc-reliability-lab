@@ -132,3 +132,15 @@ class Maintenance(unittest.TestCase):
             with self.assertRaises(RuntimeError):savepoint_result(value)
         self.assertIsNone(savepoint_result({'status':{'id':'IN_PROGRESS'}}))
         self.assertEqual(savepoint_result({'status':{'id':'COMPLETED'},'operation':{'location':'file:///state/savepoints/job'}}),'file:///state/savepoints/job')
+
+    def test_cdc18(self):
+        from cdc_lab.evidence import record_run
+        with tempfile.TemporaryDirectory() as d:
+            for value in ({'metric':float('nan')},{'unsupported':object()}):
+                with self.assertRaises((ValueError,TypeError)):record_run(d,value)
+                self.assertEqual(list(pathlib.Path(d).iterdir()),[])
+            with patch('cdc_lab.evidence.os.fsync',side_effect=OSError('disk')):
+                with self.assertRaises(OSError):record_run(d,{'ok':True})
+            self.assertEqual(list(pathlib.Path(d).iterdir()),[])
+            output=record_run(d,{'ok':True});self.assertEqual(json.loads(output.read_text()),{'ok':True})
+            self.assertEqual(output.stat().st_mode&0o777,0o600)
