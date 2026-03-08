@@ -9,11 +9,12 @@ def create_env(path):
             handle.write(key + "=" + secrets.token_hex(24) + "\n")
 
 def load_env(path):
+    import re
     result = {}
     for line in Path(path).read_text().splitlines():
-        if line and not line.startswith("#"):
+        if line.strip() and not line.lstrip().startswith("#"):
             key, sep, value = line.partition("=")
-            if not sep or not value or key in result:
+            if not sep or not value or key in result or not re.fullmatch(r"[A-Z_][A-Z0-9_]*",key) or value != value.strip() or any(ord(ch)<32 or ord(ch)==127 for ch in value):
                 raise ValueError("invalid local environment entry")
             result[key] = value
     if not all(result.get(key) for key in ("POSTGRES_PASSWORD", "CLICKHOUSE_PASSWORD")):

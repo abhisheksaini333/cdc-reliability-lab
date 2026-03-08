@@ -144,3 +144,13 @@ class Maintenance(unittest.TestCase):
             self.assertEqual(list(pathlib.Path(d).iterdir()),[])
             output=record_run(d,{'ok':True});self.assertEqual(json.loads(output.read_text()),{'ok':True})
             self.assertEqual(output.stat().st_mode&0o777,0o600)
+
+    def test_cdc19(self):
+        from cdc_lab.config import load_env
+        with tempfile.TemporaryDirectory() as d:
+            p=pathlib.Path(d)/'.env'
+            for extra in ('bad-key=value','EXTRA=contains\x00nul','EXTRA= space'):
+                p.write_text('POSTGRES_PASSWORD=x\nCLICKHOUSE_PASSWORD=y\n'+extra+'\n')
+                with self.assertRaises(ValueError):load_env(p)
+            p.write_bytes(b'  # local\r\n  \r\nPOSTGRES_PASSWORD=x\r\nCLICKHOUSE_PASSWORD=y\r\n')
+            self.assertEqual(load_env(p),{'POSTGRES_PASSWORD':'x','CLICKHOUSE_PASSWORD':'y'})
