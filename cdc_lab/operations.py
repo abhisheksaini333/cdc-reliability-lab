@@ -1,4 +1,5 @@
 
+from urllib.parse import urlsplit
 from . import runtime
 
 def job_id(value):
@@ -41,9 +42,17 @@ def savepoint_result(status):
         return None
     operation = status.get("operation", {})
     location = operation.get("location") if isinstance(operation, dict) else None
-    if not isinstance(operation, dict) or "failure-cause" in operation or not isinstance(location, str) or not location.startswith("file:///state/savepoints/") or any(ord(ch)<32 for ch in location):
+    if not isinstance(operation, dict) or "failure-cause" in operation or not isinstance(location, str) or any(ord(ch)<32 for ch in location):
         raise RuntimeError("Flink savepoint failed")
-    return operation["location"]
+    try:
+        parsed = urlsplit(location)
+    except ValueError as error:
+        raise RuntimeError("Flink savepoint failed") from error
+    if (parsed.scheme != "file" or parsed.netloc or parsed.query or parsed.fragment
+            or not parsed.path.startswith("/state/savepoints/")
+            or ".." in parsed.path.split("/") or "'" in location):
+        raise RuntimeError("Flink savepoint failed")
+    return location
 
 def savepoint(cancel=False):
     job = active_job()

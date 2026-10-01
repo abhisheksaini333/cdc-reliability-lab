@@ -154,3 +154,26 @@ class Maintenance(unittest.TestCase):
                 with self.assertRaises(ValueError):load_env(p)
             p.write_bytes(b'  # local\r\n  \r\nPOSTGRES_PASSWORD=x\r\nCLICKHOUSE_PASSWORD=y\r\n')
             self.assertEqual(load_env(p),{'POSTGRES_PASSWORD':'x','CLICKHOUSE_PASSWORD':'y'})
+
+    def test_cdc20(self):
+        from cdc_lab.benchmark import measure
+        from cdc_lab.fixtures import readings
+        with patch('cdc_lab.benchmark.runtime.clickhouse') as service:
+            for start in (True,0,1.5,2**63-2):
+                with self.assertRaises(ValueError):measure(count=2,rounds=2,start=start)
+            service.assert_not_called()
+        with self.assertRaises(ValueError):readings(2,start=2**63-1)
+        self.assertEqual(readings(1,start=2**63-1)[0]['id'],2**63-1)
+
+    def test_savepoint_location_preserves_flink_local_uri_variants(self):
+        from cdc_lab.operations import savepoint_result
+        for location in ('file:/state/savepoints/savepoint-a9225d-eb2c8607fc88',
+                         'file:///state/savepoints/savepoint-a9225d-eb2c8607fc88'):
+            self.assertEqual(savepoint_result({'status': {'id': 'COMPLETED'},
+                                               'operation': {'location': location}}), location)
+        for location in ('file://remote/state/savepoints/job', 'file:/elsewhere/job',
+                         'file:/state/savepoints/../job', 'file:/state/savepoints/job?query',
+                         'file:/state/savepoints/job#fragment', "file:/state/savepoints/jo'b",
+                         'file:/state/savepoints/job\n', 'file://[bad/state/savepoints/job'):
+            with self.assertRaises(RuntimeError):
+                savepoint_result({'status': {'id': 'COMPLETED'}, 'operation': {'location': location}})

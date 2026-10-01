@@ -5,6 +5,8 @@ from . import workload, reconcile, runtime, metrics
 def measure(count=100, rounds=3, start=10000):
     if type(rounds) is not int or not 1 <= rounds <= 20 or type(count) is not int or not 1 <= count <= 10000:
         raise ValueError('benchmark rounds or count outside bounds')
+    from .fixtures import validate_range
+    validate_range(count*rounds,start)
     samples=[]
     for iteration in range(rounds):
         baseline=int(runtime.clickhouse("SELECT uniqExact(event_id) FROM lab.raw_events"))
